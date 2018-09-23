@@ -6,50 +6,43 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>969</width>
+    <height>717</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="importButton">
    <property name="geometry">
     <rect>
-     <x>130</x>
-     <y>80</y>
-     <width>111</width>
+     <x>120</x>
+     <y>30</y>
+     <width>701</width>
      <height>31</height>
     </rect>
    </property>
    <property name="text">
-    <string>PushButton</string>
+    <string>Import</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label">
+  <widget class="QLabel" name="imgLabel">
    <property name="geometry">
     <rect>
-     <x>140</x>
-     <y>120</y>
-     <width>91</width>
-     <height>31</height>
+     <x>120</x>
+     <y>90</y>
+     <width>701</width>
+     <height>491</height>
     </rect>
    </property>
+   <property name="frameShape">
+    <enum>QFrame::Box</enum>
+   </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string/>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit">
-   <property name="geometry">
-    <rect>
-     <x>100</x>
-     <y>30</y>
-     <width>181</width>
-     <height>31</height>
-    </rect>
    </property>
   </widget>
  </widget>
