@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>969</width>
-    <height>717</height>
+    <width>881</width>
+    <height>474</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,9 +16,9 @@
   <widget class="QPushButton" name="importButton">
    <property name="geometry">
     <rect>
-     <x>120</x>
-     <y>30</y>
-     <width>701</width>
+     <x>20</x>
+     <y>20</y>
+     <width>841</width>
      <height>31</height>
     </rect>
    </property>
@@ -29,14 +29,14 @@
   <widget class="QLabel" name="imgLabel">
    <property name="geometry">
     <rect>
-     <x>120</x>
-     <y>90</y>
-     <width>701</width>
-     <height>491</height>
+     <x>20</x>
+     <y>60</y>
+     <width>841</width>
+     <height>301</height>
     </rect>
    </property>
    <property name="frameShape">
-    <enum>QFrame::Box</enum>
+    <enum>QFrame::NoFrame</enum>
    </property>
    <property name="text">
     <string/>

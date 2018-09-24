@@ -33,7 +33,7 @@ class MainWindow:
 
 
 def main():
-    img_path = "scene10.png"
+    img_path = "tests/images/test1.png"
     color_original = cv2.imread(img_path)
     if color_original is None:
         print(f"Invalid image filepath: {img_path}")

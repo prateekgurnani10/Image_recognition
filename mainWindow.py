@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QDialog, QApplication
 from PyQt5.uic import loadUi
 from qtpy import QtCore
 
+
 DIALOG_NAME = 'main_dialog.ui'
 
 
@@ -21,7 +22,7 @@ class MainWindow(QDialog):
 
     @pyqtSlot()
     def on_import_clicked(self):
-        self.load_image('scene10.png')
+        self.load_image('tests/images/test1.png')
 
     def load_image(self, img_name):
         self._img = cv2.imread(img_name)
@@ -45,11 +46,17 @@ class MainWindow(QDialog):
         # bytes_per_line = 3 * width
         # img_1 = QImage(self._img.data, width, height, bytes_per_line, q_format)
 
+        # self.imgLabel.setGeometry(QtCore.QRect(100, 100, width, height)) #(x, y, width, height)
+
         img = QImage(self._img, self._img.shape[1], self._img.shape[0], self._img.strides[0], q_format)
+        img = img.scaled(840, 700, QtCore.Qt.KeepAspectRatio)
 
         # Since openCV loads an image as BGR, we need to convert from BGR -> RBG
         img = img.rgbSwapped()
         self.imgLabel.setPixmap(QPixmap.fromImage(img))
+
+        # Resize the label to the scaled images width and height
+        self.imgLabel.resize(img.rect().width(), img.rect().height())
         self.imgLabel.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
 
