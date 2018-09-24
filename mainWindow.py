@@ -6,6 +6,9 @@ from PyQt5.QtWidgets import QDialog, QApplication
 from PyQt5.uic import loadUi
 from qtpy import QtCore
 
+# TODO: Programmatically create behaviors such as contrast/brightness, when a behavior is added to the imageProcessor,
+# TODO: create a slider for it, and connect the slider to the behavior
+# TODO: image processor should contain an array or map of behaviors (can use an enum-like class to store strings)
 
 DIALOG_NAME = 'main_dialog.ui'
 

@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+# TODO: Move all image processing code into respective files along with using the Qt interface rather than openCV
+
 
 class TrackbarOptions:
     contrast = "Contrast"
@@ -98,9 +100,11 @@ def main():
             if grayscale == 1:
                 # Save the image and update the saved image count
                 cv2.imwrite(f"saved-{count}-{img_path}", gray_modified)
+                print(f"Saving modified image")
                 count += 1
             else:
                 cv2.imwrite(f"saved-{count}-{img_path}", color_modified)
+                print(f"Saving modified image")
                 count += 1
 
         contrast = cv2.getTrackbarPos(TrackbarOptions.contrast, window.get_name())
