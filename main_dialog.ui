@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>881</width>
-    <height>474</height>
+    <width>1053</width>
+    <height>773</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,9 +16,9 @@
   <widget class="QPushButton" name="importButton">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>841</width>
+     <x>910</x>
+     <y>720</y>
+     <width>111</width>
      <height>31</height>
     </rect>
    </property>
@@ -26,23 +26,81 @@
     <string>Import</string>
    </property>
   </widget>
-  <widget class="QLabel" name="imgLabel">
+  <widget class="QLabel" name="leftImgLabel">
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>60</y>
-     <width>841</width>
-     <height>301</height>
+     <y>10</y>
+     <width>481</width>
+     <height>611</height>
     </rect>
    </property>
    <property name="frameShape">
-    <enum>QFrame::NoFrame</enum>
+    <enum>QFrame::Box</enum>
    </property>
    <property name="text">
     <string/>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="saveButton">
+   <property name="geometry">
+    <rect>
+     <x>790</x>
+     <y>720</y>
+     <width>111</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="rightImgLabel">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>10</y>
+     <width>481</width>
+     <height>611</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Box</enum>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="cannyButton">
+   <property name="geometry">
+    <rect>
+     <x>460</x>
+     <y>720</y>
+     <width>131</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Canny</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="cannySlider">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>660</y>
+     <width>851</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
    </property>
   </widget>
  </widget>
