@@ -1,32 +1,17 @@
-import sys
 from enum import Enum
 import cv2
-import qdarkstyle
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot, QDir, QFile, QTextStream, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
 from PyQt5.uic import loadUi
 
-# Handle stupid Qt errors this way so they're not cryptic
+
 #################################################################
-# Back up the reference to the exceptionhook
-sys._excepthook = sys.excepthook
-
-
-def my_exception_hook(exctype, value, traceback):
-    # Print the error and traceback
-    print(exctype, value, traceback)
-    # Call the normal Exception hook after
-    sys._excepthook(exctype, value, traceback)
-    sys.exit(1)
-
-
-# Set the exception hook to our wrapping function
-sys.excepthook = my_exception_hook
-####################################################################
-
+# Globals
 MAIN_WINDOW_DIALOG = 'main_window_dialog.ui'
+
+#################################################################
 
 
 class CascadeList(Enum):
@@ -153,24 +138,3 @@ class MainWindow(QDialog):
         # Resize the label to the scaled images width and height
         image_label.resize(img.rect().width(), img.rect().height())
         image_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-
-
-####################################################################
-def main():
-    app = QApplication(sys.argv)
-
-    window = MainWindow()
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
-    window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-    window.setWindowTitle("Dejavu Interface")
-    window.show()
-
-    try:
-        sys.exit(app.exec_())
-    except SystemError:
-        print("Error")
-
-
-####################################################################
-if __name__ == '__main__':
-    main()
