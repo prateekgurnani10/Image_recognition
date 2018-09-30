@@ -1,8 +1,9 @@
 import sys
 import qdarkstyle
-import main_window_dialog as dejavu_window_main
+import main_window as dejavu_window_main
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
+
 
 # Handle stupid Qt errors this way so they're not cryptic
 #################################################################

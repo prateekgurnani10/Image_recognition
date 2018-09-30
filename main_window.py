@@ -1,15 +1,15 @@
 from enum import Enum
 import cv2
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSlot, QDir, QFile, QTextStream, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, QDir
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMainWindow
 from PyQt5.uic import loadUi
 
 
 #################################################################
 # Globals
-MAIN_WINDOW_DIALOG = 'main_window_dialog.ui'
+MAIN_WINDOW_UI = 'main_window.ui'
 
 #################################################################
 
@@ -29,11 +29,11 @@ class Cascades:
         }
 
 
-class MainWindow(QDialog):
+class MainWindow(QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
-        loadUi(MAIN_WINDOW_DIALOG, self)
+        loadUi(MAIN_WINDOW_UI, self)
 
         self._cascades = Cascades()     # Mapping of cascades to their cascade classifiers
         self._color_img = None          # Colored image
@@ -54,7 +54,7 @@ class MainWindow(QDialog):
             return
 
         # Use the slider to determine canny image values
-        canny_image = cv2.Canny(self._grayscale_img, self.cannySlider.value(), self.cannySlider.value() * 3)
+        canny_image = cv2.Canny(self._color_img, self.cannySlider.value(), self.cannySlider.value() * 3)
         self.display_img(canny_image, self.rightImgLabel)
 
     @pyqtSlot()
@@ -71,7 +71,7 @@ class MainWindow(QDialog):
                 self._processed_img = self._color_img.copy()
 
             roi_grayscale = self._grayscale_img[y: y + h, x: x + h]
-            roi_color = self._processed_img[y: y + h, x: x + h]
+            roi_color = self._color_img[y: y + h, x: x + h]
 
             if self.detectEyesCheckBox.isChecked():
                 # Detect eyes
