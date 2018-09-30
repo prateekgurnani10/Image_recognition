@@ -3,7 +3,6 @@
 ### Important Tasks:
 
 ###### UI Work:
- * Transition the main window into a QMainWindow vs a QDialog
  * Add layout for image displays
  * Add layout for sliders
  * Add a QWidget slider_container that will contain data to build sliders programmatically

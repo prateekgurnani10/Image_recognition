@@ -1,9 +1,10 @@
 from enum import Enum
+import numpy as np
 import cv2
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot, QDir
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QFileDialog, QMainWindow
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton
 from PyQt5.uic import loadUi
 
 
@@ -35,16 +36,61 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         loadUi(MAIN_WINDOW_UI, self)
 
+        # Webcam option bar / Enable sub-option
+        self.menuBar().addMenu("&Webcam").addAction("&Enable")
+
+        # Exit button which will be added to the top menu bar
+        self.exit_button = QPushButton("X", self.menuBar())
+        self.menuBar().setCornerWidget(self.exit_button, QtCore.Qt.TopRightCorner)
+
         self._cascades = Cascades()     # Mapping of cascades to their cascade classifiers
         self._color_img = None          # Colored image
         self._grayscale_img = None      # Grayscale image
         self._processed_img = None      # Processed image
 
-        self.exitButton.clicked.connect(self.on_exit_button_clicked)
+        self.exit_button.clicked.connect(self.on_exit_button_clicked)
         self.importButton.clicked.connect(self.on_import_clicked)
         self.saveButton.clicked.connect(self.on_save_clicked)
         self.detectButton.clicked.connect(self.on_detect_clicked)
         self.cannySlider.valueChanged.connect(self.on_canny_slider_value_changed)
+
+        # Image rotation connection loops
+        # SpinBox and the dial are connected to each other's setters, along with each being able to
+        # call rotate_image simultaneously
+        self.rotateImgDial.valueChanged.connect(self.rotate_image)
+        self.rotateImgSpinBox.valueChanged.connect(self.rotate_image)
+        self.rotateImgDial.valueChanged.connect(self.rotateImgSpinBox.setValue)
+        self.rotateImgSpinBox.valueChanged.connect(self.rotateImgDial.setValue)
+
+    @pyqtSlot()
+    def rotate_image(self):
+        angle = self.rotateImgDial.value()
+        scale = 1.0
+
+        w = self._color_img.shape[1]
+        h = self._color_img.shape[0]
+        r_angle = np.deg2rad(int(angle))  # Get the angle in radians
+
+        # Calculate new image width and height
+        nw = (abs(np.sin(r_angle) * h) + abs(np.cos(r_angle) * w)) * scale
+        nh = (abs(np.cos(r_angle) * h) + abs(np.sin(r_angle) * w)) * scale
+
+        # Get rotation matrix from openCV
+        rotation_mat = cv2.getRotationMatrix2D((nw * 0.5, nh * 0.5), angle, scale)
+
+        # Calculate the move from the old center to the new center combined w/ the rotation
+        # (dot prod of the rotation matrix and the new matrix)
+        rotation_move = np.dot(
+            rotation_mat,
+            np.array([(nw - w) * 0.5, (nh - h) * 0.5, 0])
+        )
+
+        # The move only affects the translation, so update the translation part of the transform
+        rotation_mat[0, 2] += rotation_move[0]
+        rotation_mat[1, 2] += rotation_move[1]
+
+        self._processed_img = cv2.warpAffine(self._color_img, rotation_mat, (int(np.ceil(nw)), int(np.ceil(nh))))
+        self.display_img(self._processed_img, self.rightImgLabel)
 
     @pyqtSlot()
     def on_canny_slider_value_changed(self):
