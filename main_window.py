@@ -1,10 +1,11 @@
 from enum import Enum
 import numpy as np
 import cv2
+import slider_widget as slider
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSlot, QDir
+from PyQt5.QtCore import pyqtSlot, QDir, QPoint
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton, QDesktopWidget
 from PyQt5.uic import loadUi
 
 
@@ -16,12 +17,14 @@ MAIN_WINDOW_UI = 'main_window.ui'
 
 
 class CascadeList(Enum):
+
     EYE_CASCADE = 0
     FACE_CASCADE = 1
     SMILE_CASCADE = 2
 
 
 class Cascades:
+
     def __init__(self):
         self.cascades_list = {
             CascadeList.EYE_CASCADE: cv2.CascadeClassifier("cascades/haarcascade_eye.xml"),
@@ -35,12 +38,20 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         loadUi(MAIN_WINDOW_UI, self)
+        # Center the window on launch
+        self.center()
+
+        # Test to add 5 sliders to the sliderLayout
+        for x in range(0, 5):
+            self.sliderLayout.addWidget(slider.SliderWidget())
+
+        self.old_pos = None             # QMainWindow old position (position tracking)
 
         # Webcam option bar / Enable sub-option
         self.menuBar().addMenu("&Webcam").addAction("&Enable")
 
         # Exit button which will be added to the top menu bar
-        self.exit_button = QPushButton("X", self.menuBar())
+        self.exit_button = QPushButton(" X ", self.menuBar())
         self.menuBar().setCornerWidget(self.exit_button, QtCore.Qt.TopRightCorner)
 
         self._cascades = Cascades()     # Mapping of cascades to their cascade classifiers
@@ -52,7 +63,6 @@ class MainWindow(QMainWindow):
         self.importButton.clicked.connect(self.on_import_clicked)
         self.saveButton.clicked.connect(self.on_save_clicked)
         self.detectButton.clicked.connect(self.on_detect_clicked)
-        self.cannySlider.valueChanged.connect(self.on_canny_slider_value_changed)
 
         # Image rotation connection loops
         # SpinBox and the dial are connected to each other's setters, along with each being able to
@@ -62,8 +72,27 @@ class MainWindow(QMainWindow):
         self.rotateImgDial.valueChanged.connect(self.rotateImgSpinBox.setValue)
         self.rotateImgSpinBox.valueChanged.connect(self.rotateImgDial.setValue)
 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
+    # Override
+    def mousePressEvent(self, event):
+        self.old_pos = event.globalPos()
+
+    # Override
+    def mouseMoveEvent(self, event):
+        delta = QPoint(event.globalPos() - self.old_pos)
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.old_pos = event.globalPos()
+
     @pyqtSlot()
     def rotate_image(self):
+        if self._color_img is None:
+            return
+
         angle = self.rotateImgDial.value()
         scale = 1.0
 
@@ -92,7 +121,6 @@ class MainWindow(QMainWindow):
         self._processed_img = cv2.warpAffine(self._color_img, rotation_mat, (int(np.ceil(nw)), int(np.ceil(nh))))
         self.display_img(self._processed_img, self.rightImgLabel)
 
-    @pyqtSlot()
     def on_canny_slider_value_changed(self):
         # Always set slider text
         self.cannySliderPositionLabel.setText(str(self.cannySlider.value()))

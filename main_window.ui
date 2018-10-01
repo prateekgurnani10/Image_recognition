@@ -20,10 +20,10 @@
    <widget class="QLabel" name="leftImgLabel">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>8</x>
       <y>10</y>
-      <width>530</width>
-      <height>560</height>
+      <width>491</width>
+      <height>501</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -39,10 +39,10 @@
    <widget class="QLabel" name="rightImgLabel">
     <property name="geometry">
      <rect>
-      <x>570</x>
+      <x>610</x>
       <y>10</y>
-      <width>530</width>
-      <height>560</height>
+      <width>491</width>
+      <height>501</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -172,62 +172,13 @@
      <string>Smile</string>
     </property>
    </widget>
-   <widget class="QSlider" name="cannySlider">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>630</y>
-      <width>1091</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>590</y>
-      <width>131</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>9</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Canny Image Slider:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="cannySliderPositionLabel">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>590</y>
-      <width>41</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>9</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-   </widget>
    <widget class="QDial" name="rotateImgDial">
     <property name="geometry">
      <rect>
-      <x>270</x>
-      <y>570</y>
-      <width>61</width>
-      <height>61</height>
+      <x>520</x>
+      <y>220</y>
+      <width>71</width>
+      <height>71</height>
      </rect>
     </property>
     <property name="maximum">
@@ -240,9 +191,9 @@
    <widget class="QSpinBox" name="rotateImgSpinBox">
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>580</y>
-      <width>61</width>
+      <x>510</x>
+      <y>300</y>
+      <width>81</width>
       <height>41</height>
      </rect>
     </property>
@@ -251,9 +202,51 @@
       <pointsize>9</pointsize>
      </font>
     </property>
+    <property name="wrapping">
+     <bool>false</bool>
+    </property>
+    <property name="frame">
+     <bool>true</bool>
+    </property>
+    <property name="buttonSymbols">
+     <enum>QAbstractSpinBox::UpDownArrows</enum>
+    </property>
     <property name="maximum">
      <number>270</number>
     </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>190</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Rotate</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>520</y>
+      <width>1101</width>
+      <height>271</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="sliderLayout">
+     <property name="spacing">
+      <number>6</number>
+     </property>
+    </layout>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>

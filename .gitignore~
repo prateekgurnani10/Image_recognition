@@ -1,5 +1,0 @@
-# Local .gitignore
-
-# Ignored project files:
-.idea/
-venv/
