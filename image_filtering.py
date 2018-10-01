@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 
-# TODO: Move all image processing code into respective files along with using the Qt interface rather than openCV
-
 
 class TrackbarOptions:
     contrast = "Contrast"

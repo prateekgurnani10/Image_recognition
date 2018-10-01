@@ -1,7 +1,7 @@
-from enum import Enum
 import numpy as np
 import cv2
 import slider_widget as slider
+import processing_utils as utils
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot, QDir, QPoint
 from PyQt5.QtGui import QImage, QPixmap
@@ -10,27 +10,10 @@ from PyQt5.uic import loadUi
 
 
 #################################################################
-# Globals
+
 MAIN_WINDOW_UI = 'main_window.ui'
 
 #################################################################
-
-
-class CascadeList(Enum):
-
-    EYE_CASCADE = 0
-    FACE_CASCADE = 1
-    SMILE_CASCADE = 2
-
-
-class Cascades:
-
-    def __init__(self):
-        self.cascades_list = {
-            CascadeList.EYE_CASCADE: cv2.CascadeClassifier("cascades/haarcascade_eye.xml"),
-            CascadeList.FACE_CASCADE: cv2.CascadeClassifier("cascades/haarcascade_frontalface.xml"),
-            CascadeList.SMILE_CASCADE: cv2.CascadeClassifier("cascades/haarcascade_smile.xml")
-        }
 
 
 class MainWindow(QMainWindow):
@@ -41,11 +24,19 @@ class MainWindow(QMainWindow):
         # Center the window on launch
         self.center()
 
-        # Test to add 5 sliders to the sliderLayout
-        for x in range(0, 5):
-            self.sliderLayout.addWidget(slider.SliderWidget())
+        ##########################################################################################
+        # Test to add 5 sliders to the sliderLayout with a default processing behavior (temporary)
+        # Test slider behavior values
+        min_max = (0, 99)
+        name = "Test Slider "
+        default = 0
 
-        self.old_pos = None             # QMainWindow old position (position tracking)
+        # Programmatically add the sliders
+        for x in range(0, 5):
+            self.sliderLayout.addWidget(slider.SliderWidget(utils.ProcessingBehavior(min_max, name + str(x), default)))
+        ##########################################################################################
+
+        self.old_pos = QPoint()             # QMainWindow old position (position tracking)
 
         # Webcam option bar / Enable sub-option
         self.menuBar().addMenu("&Webcam").addAction("&Enable")
@@ -54,10 +45,10 @@ class MainWindow(QMainWindow):
         self.exit_button = QPushButton(" X ", self.menuBar())
         self.menuBar().setCornerWidget(self.exit_button, QtCore.Qt.TopRightCorner)
 
-        self._cascades = Cascades()     # Mapping of cascades to their cascade classifiers
-        self._color_img = None          # Colored image
-        self._grayscale_img = None      # Grayscale image
-        self._processed_img = None      # Processed image
+        self._cascades = utils.Cascades()   # Mapping of cascades to their cascade classifiers
+        self._color_img = None              # Colored image
+        self._grayscale_img = None          # Grayscale image
+        self._processed_img = None          # Processed image
 
         self.exit_button.clicked.connect(self.on_exit_button_clicked)
         self.importButton.clicked.connect(self.on_import_clicked)
@@ -137,7 +128,9 @@ class MainWindow(QMainWindow):
             return
 
         # Detect faces
-        faces = self._cascades.cascades_list[CascadeList.FACE_CASCADE].detectMultiScale(self._grayscale_img, 1.3, 5)
+        faces = self._cascades.cascades_list[utils.Cascades.CascadeList.FACE_CASCADE].detectMultiScale(
+            self._grayscale_img, 1.3, 5)
+
         for (x, y, w, h) in faces:
             if self.detectFaceCheckBox.isChecked():
                 cv2.rectangle(self._processed_img, (x, y), (x + w, y + h), (255, 0, 0), 3)
@@ -149,14 +142,19 @@ class MainWindow(QMainWindow):
 
             if self.detectEyesCheckBox.isChecked():
                 # Detect eyes
-                eyes = self._cascades.cascades_list[CascadeList.EYE_CASCADE].detectMultiScale(roi_grayscale, 1.1, 22)
+                eyes = self._cascades.cascades_list[utils.Cascades.CascadeList.EYE_CASCADE].detectMultiScale(
+                    roi_grayscale, 1.1, 22)
+
                 for (ex, ey, ew, eh) in eyes:
                     cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
             else:
                 self._processed_img[y: y + h, x: x + w] = self._color_img[y: y + h, x: x + w].copy()
 
             if self.detectSmileCheckBox.isChecked():
-                smile = self._cascades.cascades_list[CascadeList.SMILE_CASCADE].detectMultiScale(roi_grayscale, 1.7, 18)
+                # Detect smiles
+                smile = self._cascades.cascades_list[utils.Cascades.CascadeList.SMILE_CASCADE].detectMultiScale(
+                    roi_grayscale, 1.7, 18)
+
                 for (sx, sy, sw, sh) in smile:
                     cv2.rectangle(roi_color, (sx, sy), (sx + sw, sy + sh), (0, 0, 255), 2)
             else:
