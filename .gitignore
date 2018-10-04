@@ -3,3 +3,4 @@
 # Ignored project files:
 .idea/
 venv/
+__pycache__/

@@ -18,14 +18,15 @@ pip install opencv-python
 pip install numpy
 pip install pyqt5
 pip install pyqt5-tools
+pip install qdarkstyle
 ```
 
 ## Developers
 
-* **Holden Babineaux** - *Project & Technical Lead*
-* **Chih Ting Pang** - *TBA*
-* **Apurvakumar Patel** - *TBA*
-* **Prateek Gurnani** - *TBA*
+* **Holden Babineaux** - *Developer / Project & Technical Lead*
+* **Chih Ting Pang** - *Developer*
+* **Apurvakumar Patel** - *Developer*
+* **Prateek Gurnani** - *Developer*
 
 ## License
 
