@@ -12,14 +12,14 @@ SLIDER_WIDGET_UI = 'slider_widget.ui'
 
 class SliderWidget(QWidget):
 
-    def __init__(self, processing_behavior):
+    def __init__(self, behavior):
         super(QWidget, self).__init__()
         loadUi(SLIDER_WIDGET_UI, self)
 
-        (min_v, max_v) = processing_behavior.min_max
+        (min_v, max_v) = behavior.min_max
 
         # Default slider position
-        self.default_slider_pos = processing_behavior.default
+        self.default_slider_pos = behavior.default
 
         # Set slider min/max based on the behavior
         self.behaviorSlider.setMinimum(min_v)
@@ -29,7 +29,7 @@ class SliderWidget(QWidget):
         self.behaviorSlider.setValue(self.default_slider_pos)
 
         # Set labels name/value according to the given behavior
-        self.behaviorLabel.setText(processing_behavior.name)
+        self.behaviorLabel.setText(behavior.name)
         self.sliderValueLabel.setText(str(self.behaviorSlider.value()))
 
         self.behaviorSlider.valueChanged.connect(self.on_slider_value_changed)

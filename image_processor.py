@@ -10,31 +10,43 @@ class ImageProcessor:
         pass
 
     @abstractmethod
-    def process_image(self, image, behavior):
+    def process_image(self, image):
+        pass
+
+    @abstractmethod
+    def behavior(self):
         pass
 
 
 # Kernel filtering
 class FilterProcessor(ImageProcessor):
-    def __init__(self):
+    def __init__(self, behavior):
+        self._behavior = behavior
+
+    def process_image(self, image):
         pass
 
-    def process_image(self, image, behavior):
-        pass
+    def behavior(self):
+        return self._behavior
 
 
 class BrightnessProcessor(ImageProcessor):
-    def __init__(self):
+    def __init__(self, behavior):
+        self._behavior = behavior
+
+    def process_image(self, image):
         pass
 
-    def process_image(self, image, behavior):
-        pass
+    def behavior(self):
+        return self._behavior
 
 
 class ContrastProcessor(ImageProcessor):
-    def __init__(self):
+    def __init__(self, behavior):
+        self._behavior = behavior
+
+    def process_image(self, image):
         pass
 
-    def process_image(self, image, behavior):
-        pass
-
+    def behavior(self):
+        return self._behavior

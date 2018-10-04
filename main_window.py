@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import slider_widget as slider
 import processing_utils as utils
+import image_processor as processor
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot, QDir, QPoint
 from PyQt5.QtGui import QImage, QPixmap
@@ -21,34 +22,32 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         loadUi(MAIN_WINDOW_UI, self)
+
         # Center the window on launch
         self.center()
-
-        ##########################################################################################
-        # Test to add 5 sliders to the sliderLayout with a default processing behavior (temporary)
-        # Test slider behavior values
-        min_max = (0, 99)
-        name = "Test Slider "
-        default = 0
-
-        # Programmatically add the sliders
-        for x in range(0, 5):
-            self.sliderLayout.addWidget(slider.SliderWidget(utils.ProcessingBehavior(min_max, name + str(x), default)))
-        ##########################################################################################
-
-        self.old_pos = QPoint()             # QMainWindow old position (position tracking)
-
         # Webcam option bar / Enable sub-option
         self.menuBar().addMenu("&Webcam").addAction("&Enable")
-
         # Exit button which will be added to the top menu bar
         self.exit_button = QPushButton(" X ", self.menuBar())
         self.menuBar().setCornerWidget(self.exit_button, QtCore.Qt.TopRightCorner)
 
+        self.old_pos = QPoint()             # QMainWindow old position (position tracking)
         self._cascades = utils.Cascades()   # Mapping of cascades to their cascade classifiers
+        self._kernels = utils.Kernels()     # Kernels for image filtering
         self._color_img = None              # Colored image
         self._grayscale_img = None          # Grayscale image
         self._processed_img = None          # Processed image
+
+        # Create all the image processors, giving them each their unique processing behavior
+        self._processors = [
+            processor.FilterProcessor(utils.ProcessingBehavior((0, len(self._kernels.kernels_list) - 1), "Filter", 0)),
+            processor.BrightnessProcessor(utils.ProcessingBehavior((0, 100), "Brightness", 50)),
+            processor.ContrastProcessor(utils.ProcessingBehavior((0, 100), "Contrast", 50))
+        ]
+
+        # Create a slider, passing the processor's behavior to the slider
+        for ip in self._processors:
+            self.sliderLayout.addWidget(slider.SliderWidget(ip.behavior()))
 
         self.exit_button.clicked.connect(self.on_exit_button_clicked)
         self.importButton.clicked.connect(self.on_import_clicked)
@@ -78,6 +77,13 @@ class MainWindow(QMainWindow):
         delta = QPoint(event.globalPos() - self.old_pos)
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.old_pos = event.globalPos()
+
+    # Use this slot to connect an abstract processor with a connected slider value, and do processing for the
+    # given processor
+    @pyqtSlot()
+    def on_slider_move(self, abs_processor, slider_val):
+        # abs_processor.process(self._color_img, slider_val)
+        pass
 
     @pyqtSlot()
     def rotate_image(self):
@@ -137,8 +143,8 @@ class MainWindow(QMainWindow):
             else:
                 self._processed_img = self._color_img.copy()
 
-            roi_grayscale = self._grayscale_img[y: y + h, x: x + h]
-            roi_color = self._color_img[y: y + h, x: x + h]
+            roi_grayscale = self._grayscale_img[y: y + h, x: x + w]
+            roi_color = self._color_img[y: y + h, x: x + w]
 
             if self.detectEyesCheckBox.isChecked():
                 # Detect eyes
