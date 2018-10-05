@@ -11,9 +11,13 @@ from PyQt5.uic import loadUi
 
 
 #################################################################
+# UI
+MAIN_WINDOW_UI      = 'main_window.ui'
 
-MAIN_WINDOW_UI = 'main_window.ui'
-
+# String definitions
+BEHAVIOR_FILTER     = "filter"
+BEHAVIOR_BRIGHTNESS = "brightness"
+BEHAVIOR_CONTRAST   = "contrast"
 #################################################################
 
 
@@ -31,23 +35,24 @@ class MainWindow(QMainWindow):
         self.exit_button = QPushButton(" X ", self.menuBar())
         self.menuBar().setCornerWidget(self.exit_button, QtCore.Qt.TopRightCorner)
 
-        self.old_pos = QPoint()             # QMainWindow old position (position tracking)
+        self._old_pos = QPoint()             # QMainWindow old position (position tracking)
         self._cascades = utils.Cascades()   # Mapping of cascades to their cascade classifiers
         self._kernels = utils.Kernels()     # Kernels for image filtering
         self._color_img = None              # Colored image
         self._grayscale_img = None          # Grayscale image
         self._processed_img = None          # Processed image
 
-        # Create all the image processors, giving them each their unique processing behavior
-        self._processors = [
-            processor.FilterProcessor(utils.ProcessingBehavior((0, len(self._kernels.kernels_list) - 1), "Filter", 0)),
-            processor.BrightnessProcessor(utils.ProcessingBehavior((0, 100), "Brightness", 50)),
-            processor.ContrastProcessor(utils.ProcessingBehavior((0, 100), "Contrast", 50))
-        ]
+        # Maps behaviors to their respective ImageProcessor
+        self._processors = {
+            BEHAVIOR_FILTER: processor.FilterProcessor(utils.ProcessingBehavior(
+                (0, len(self._kernels.kernels_list) - 1), BEHAVIOR_FILTER, 0)),
+            BEHAVIOR_BRIGHTNESS: processor.BrightnessProcessor(utils.ProcessingBehavior(
+                (0, 100), BEHAVIOR_BRIGHTNESS, 50)),
+            BEHAVIOR_CONTRAST: processor.ContrastProcessor(utils.ProcessingBehavior(
+                (0, 100), BEHAVIOR_CONTRAST, 50))
+        }
 
-        # Create a slider, passing the processor's behavior to the slider
-        for ip in self._processors:
-            self.sliderLayout.addWidget(slider.SliderWidget(ip.behavior()))
+        self.create_sliders()
 
         self.exit_button.clicked.connect(self.on_exit_button_clicked)
         self.importButton.clicked.connect(self.on_import_clicked)
@@ -62,6 +67,14 @@ class MainWindow(QMainWindow):
         self.rotateImgDial.valueChanged.connect(self.rotateImgSpinBox.setValue)
         self.rotateImgSpinBox.valueChanged.connect(self.rotateImgDial.setValue)
 
+    # Create a slider, passing the processor's behavior to the slider
+    # Connect each widget to an on_slider_move slot which will catch an emitted slider behavior model
+    def create_sliders(self):
+        for key, value in self._processors.items():
+            widget = slider.SliderWidget(value.behavior())
+            widget.slider_moved.connect(self.on_slider_move)
+            self.sliderLayout.addWidget(widget)
+
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -70,20 +83,18 @@ class MainWindow(QMainWindow):
 
     # Override
     def mousePressEvent(self, event):
-        self.old_pos = event.globalPos()
+        self._old_pos = event.globalPos()
 
     # Override
     def mouseMoveEvent(self, event):
-        delta = QPoint(event.globalPos() - self.old_pos)
+        delta = QPoint(event.globalPos() - self._old_pos)
         self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.old_pos = event.globalPos()
+        self._old_pos = event.globalPos()
 
-    # Use this slot to connect an abstract processor with a connected slider value, and do processing for the
-    # given processor
-    @pyqtSlot()
-    def on_slider_move(self, abs_processor, slider_val):
-        # abs_processor.process(self._color_img, slider_val)
-        pass
+    # Self defined pySlot
+    def on_slider_move(self, behavior_name, slider_value):
+        # Process the image when the slider is moved
+        self._processors[behavior_name].process_image(self._color_img, slider_value)
 
     @pyqtSlot()
     def rotate_image(self):
