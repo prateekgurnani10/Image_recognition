@@ -2,7 +2,7 @@ __python_version__ = "3.6"
 
 import sys
 import qdarkstyle
-import main_window as dejavu_window_main
+from coreUI import main_window as dejavu_window_main
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 
