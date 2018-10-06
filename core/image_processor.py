@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-from PyQt5.QtCore import pyqtSlot
 
 
 class ImageProcessor:
@@ -24,7 +23,6 @@ class FilterProcessor(ImageProcessor):
     def __init__(self, behavior):
         self._behavior = behavior
 
-    @pyqtSlot()
     def process_image(self, image, value):
         print(f"Filter Processor: {value}")
 
@@ -36,7 +34,6 @@ class BrightnessProcessor(ImageProcessor):
     def __init__(self, behavior):
         self._behavior = behavior
 
-    @pyqtSlot()
     def process_image(self, image, value):
         print(f"Brightness Processor: {value}")
 
@@ -48,7 +45,6 @@ class ContrastProcessor(ImageProcessor):
     def __init__(self, behavior):
         self._behavior = behavior
 
-    @pyqtSlot()
     def process_image(self, image, value):
         print(f"Contrast Processor: {value}")
 

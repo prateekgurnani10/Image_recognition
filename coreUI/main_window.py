@@ -1,8 +1,8 @@
 import numpy as np
 import cv2
-import slider_widget as slider
-import processing_utils as utils
-import image_processor as processor
+from coreUI import slider_widget as slider
+from utils import processing_utils as utils
+from core import image_processor as processor
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot, QDir, QPoint
 from PyQt5.QtGui import QImage, QPixmap
@@ -12,7 +12,7 @@ from PyQt5.uic import loadUi
 
 #################################################################
 # UI
-MAIN_WINDOW_UI      = 'main_window.ui'
+MAIN_WINDOW_UI      = 'coreUI/main_window.ui'
 
 # String definitions
 BEHAVIOR_FILTER     = "filter"
