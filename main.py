@@ -1,5 +1,5 @@
 # Python version 3.6
-# !usr/bin/python
+# !/usr/bin/env python
 
 import sys
 import qdarkstyle

@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 from coreUI import slider_widget as slider
 from utils import processing_utils as utils
 from core import image_processor as processor
@@ -10,13 +10,13 @@ from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton, QDesktopWidge
 from PyQt5.uic import loadUi
 
 
-# UI
+# UI form
 MAIN_WINDOW_UI = 'coreUI/main_window.ui'
 
 # String definitions
-BEHAVIOR_FILTER = "filter"
-BEHAVIOR_BRIGHTNESS = "brightness"
-BEHAVIOR_CONTRAST = "contrast"
+BEHAVIOR_FILTER = "Filter:"
+BEHAVIOR_BRIGHTNESS = "Brightness:"
+BEHAVIOR_CONTRAST = "Contrast:"
 
 
 class MainWindow(QMainWindow):
@@ -33,17 +33,21 @@ class MainWindow(QMainWindow):
         self.exit_button = QPushButton(" X ", self.menuBar())
         self.menuBar().setCornerWidget(self.exit_button, QtCore.Qt.TopRightCorner)
 
-        self._old_pos = QPoint()             # QMainWindow old position (position tracking)
+        self._old_pos = QPoint()            # QMainWindow old position (position tracking)
         self._cascades = utils.Cascades()   # Mapping of cascades to their cascade classifiers
         self._kernels = utils.Kernels()     # Kernels for image filtering
         self._color_img = None              # Colored image
         self._grayscale_img = None          # Grayscale image
         self._processed_img = None          # Processed image
 
+        # Initially create a filter processing behavior, passing it the list of kernel names
+        fp_behavior = utils.ProcessingBehavior((
+            0, len(self._kernels.kernels_list) - 1), BEHAVIOR_FILTER, 0)
+        fp_behavior.setting_info = [k_n for (k_n, _) in self._kernels.kernels_list]
+
         # Maps behaviors to their respective ImageProcessor
         self._processors = {
-            BEHAVIOR_FILTER: processor.FilterProcessor(utils.ProcessingBehavior(
-                (0, len(self._kernels.kernels_list) - 1), BEHAVIOR_FILTER, 0)),
+            BEHAVIOR_FILTER: processor.FilterProcessor(fp_behavior),
             BEHAVIOR_BRIGHTNESS: processor.BrightnessProcessor(utils.ProcessingBehavior(
                 (0, 100), BEHAVIOR_BRIGHTNESS, 50)),
             BEHAVIOR_CONTRAST: processor.ContrastProcessor(utils.ProcessingBehavior(
@@ -91,8 +95,13 @@ class MainWindow(QMainWindow):
 
     # Self defined pySlot
     def on_slider_move(self, behavior_name, slider_value):
+        if self._color_img is None:
+            return
         # Process the image when the slider is moved
-        self._processors[behavior_name].process_image(self._color_img, slider_value)
+        self._processed_img = self._processors[behavior_name].process_image(
+            self._color_img, slider_value)
+
+        self.display_img(self._processed_img, self.rightImgLabel)
 
     @pyqtSlot()
     def rotate_image(self):
