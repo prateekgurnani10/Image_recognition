@@ -10,15 +10,13 @@ from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton, QDesktopWidge
 from PyQt5.uic import loadUi
 
 
-#################################################################
 # UI
-MAIN_WINDOW_UI      = 'coreUI/main_window.ui'
+MAIN_WINDOW_UI = 'coreUI/main_window.ui'
 
 # String definitions
-BEHAVIOR_FILTER     = "filter"
+BEHAVIOR_FILTER = "filter"
 BEHAVIOR_BRIGHTNESS = "brightness"
-BEHAVIOR_CONTRAST   = "contrast"
-#################################################################
+BEHAVIOR_CONTRAST = "contrast"
 
 
 class MainWindow(QMainWindow):

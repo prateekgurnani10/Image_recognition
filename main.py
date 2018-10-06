@@ -1,4 +1,5 @@
-__python_version__ = "3.6"
+# Python version 3.6
+# !usr/bin/python
 
 import sys
 import qdarkstyle
@@ -7,8 +8,6 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication
 
 
-# Handle stupid Qt errors this way so they're not cryptic
-#################################################################
 # Back up the reference to the exceptionhook
 sys._excepthook = sys.excepthook
 
@@ -25,7 +24,6 @@ def my_exception_hook(exctype, value, traceback):
 sys.excepthook = my_exception_hook
 
 
-####################################################################
 def main():
     app = QApplication(sys.argv)
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
@@ -41,6 +39,5 @@ def main():
         print("Error")
 
 
-####################################################################
 if __name__ == '__main__':
     main()
