@@ -137,6 +137,12 @@ class MainWindow(QMainWindow):
         rotation_mat[1, 2] += rotation_move[1]
 
         self._processed_img = cv2.warpAffine(self._color_img, rotation_mat, (int(np.ceil(nw)), int(np.ceil(nh))))
+
+        # Do processing every time the image is rotated, this time used the processed image in place of the
+        # un-modified image. We want to use the size/shape of the transformed image this time
+        for (_, p) in self._processors.items():
+            self._processed_img = p.process_image(self._processed_img, self._processed_img)
+
         self.display_img(self._processed_img, self.rightImgLabel)
 
     @pyqtSlot()
