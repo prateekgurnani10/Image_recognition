@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 from coreUI import slider_widget as slider
 from utils import processing_utils as utils
 from core import image_processor as processor
@@ -10,15 +10,13 @@ from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton, QDesktopWidge
 from PyQt5.uic import loadUi
 
 
-#################################################################
-# UI
-MAIN_WINDOW_UI      = 'coreUI/main_window.ui'
+# UI form
+MAIN_WINDOW_UI = 'coreUI/main_window.ui'
 
 # String definitions
-BEHAVIOR_FILTER     = "filter"
-BEHAVIOR_BRIGHTNESS = "brightness"
-BEHAVIOR_CONTRAST   = "contrast"
-#################################################################
+BEHAVIOR_FILTER = "Filter:"
+BEHAVIOR_BRIGHTNESS = "Brightness:"
+BEHAVIOR_CONTRAST = "Contrast:"
 
 
 class MainWindow(QMainWindow):
@@ -35,21 +33,25 @@ class MainWindow(QMainWindow):
         self.exit_button = QPushButton(" X ", self.menuBar())
         self.menuBar().setCornerWidget(self.exit_button, QtCore.Qt.TopRightCorner)
 
-        self._old_pos = QPoint()             # QMainWindow old position (position tracking)
+        self._old_pos = QPoint()            # QMainWindow old position (position tracking)
         self._cascades = utils.Cascades()   # Mapping of cascades to their cascade classifiers
         self._kernels = utils.Kernels()     # Kernels for image filtering
         self._color_img = None              # Colored image
         self._grayscale_img = None          # Grayscale image
         self._processed_img = None          # Processed image
 
+        # Initially create a filter processing behavior, passing it the list of kernel names
+        fp_behavior = utils.ProcessingBehavior((
+            0, len(self._kernels.kernels_list) - 1), BEHAVIOR_FILTER, 0)
+        fp_behavior.setting_info = [k_n for (k_n, _) in self._kernels.kernels_list]
+
         # Maps behaviors to their respective ImageProcessor
         self._processors = {
-            BEHAVIOR_FILTER: processor.FilterProcessor(utils.ProcessingBehavior(
-                (0, len(self._kernels.kernels_list) - 1), BEHAVIOR_FILTER, 0)),
             BEHAVIOR_BRIGHTNESS: processor.BrightnessProcessor(utils.ProcessingBehavior(
-                (0, 100), BEHAVIOR_BRIGHTNESS, 50)),
+                (-50, 50), BEHAVIOR_BRIGHTNESS, 0)),
             BEHAVIOR_CONTRAST: processor.ContrastProcessor(utils.ProcessingBehavior(
-                (0, 100), BEHAVIOR_CONTRAST, 50))
+                (-50, 50), BEHAVIOR_CONTRAST, 0)),
+            BEHAVIOR_FILTER: processor.FilterProcessor(fp_behavior)
         }
 
         self.create_sliders()
@@ -91,10 +93,18 @@ class MainWindow(QMainWindow):
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self._old_pos = event.globalPos()
 
-    # Self defined pySlot
+    # Called when a signal from the slider widget is emitted
     def on_slider_move(self, behavior_name, slider_value):
-        # Process the image when the slider is moved
-        self._processors[behavior_name].process_image(self._color_img, slider_value)
+        if self._color_img is None:
+            return
+        # Cache the processors unique value from it's respective slider position
+        self._processors[behavior_name].set_unique_value(slider_value)
+
+        # We need to loop through every processor and reprocess each time any slider is moved
+        for (_, p) in self._processors.items():
+            self._processed_img = p.process_image(self._color_img, self._processed_img)
+
+        self.display_img(self._processed_img, self.rightImgLabel)
 
     @pyqtSlot()
     def rotate_image(self):
@@ -127,17 +137,13 @@ class MainWindow(QMainWindow):
         rotation_mat[1, 2] += rotation_move[1]
 
         self._processed_img = cv2.warpAffine(self._color_img, rotation_mat, (int(np.ceil(nw)), int(np.ceil(nh))))
+
+        # Do processing every time the image is rotated, this time used the processed image in place of the
+        # un-modified image. We want to use the size/shape of the transformed image this time
+        for (_, p) in self._processors.items():
+            self._processed_img = p.process_image(self._processed_img, self._processed_img)
+
         self.display_img(self._processed_img, self.rightImgLabel)
-
-    def on_canny_slider_value_changed(self):
-        # Always set slider text
-        self.cannySliderPositionLabel.setText(str(self.cannySlider.value()))
-        if self._grayscale_img is None:
-            return
-
-        # Use the slider to determine canny image values
-        canny_image = cv2.Canny(self._color_img, self.cannySlider.value(), self.cannySlider.value() * 3)
-        self.display_img(canny_image, self.rightImgLabel)
 
     @pyqtSlot()
     def on_detect_clicked(self):
