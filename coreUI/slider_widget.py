@@ -11,6 +11,7 @@ SLIDER_WIDGET_UI = 'coreUI/slider_widget.ui'
 class SliderWidget(QWidget):
 
     # Behavior signal relay
+    # Emits (behavior name, slider value)
     slider_moved = pyqtSignal(str, int)
 
     def __init__(self, behavior):

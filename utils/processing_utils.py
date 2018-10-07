@@ -9,10 +9,10 @@ from enum import Enum
 class ProcessingBehavior:
 
     def __init__(self, min_max, name, default):
-        self.min_max = min_max
-        self.name = name
-        self.default = default
-        self.setting_info = []
+        self.min_max = min_max  # Behavior min and max processing ranges
+        self.name = name        # Behavior name
+        self.default = default  # Behavior default processing value
+        self.setting_info = []  # Behavior setting information for each value b/t min-max
 
 
 class Cascades:

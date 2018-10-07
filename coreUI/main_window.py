@@ -47,11 +47,11 @@ class MainWindow(QMainWindow):
 
         # Maps behaviors to their respective ImageProcessor
         self._processors = {
-            BEHAVIOR_FILTER: processor.FilterProcessor(fp_behavior),
             BEHAVIOR_BRIGHTNESS: processor.BrightnessProcessor(utils.ProcessingBehavior(
-                (0, 100), BEHAVIOR_BRIGHTNESS, 50)),
+                (-50, 50), BEHAVIOR_BRIGHTNESS, 0)),
             BEHAVIOR_CONTRAST: processor.ContrastProcessor(utils.ProcessingBehavior(
-                (0, 100), BEHAVIOR_CONTRAST, 50))
+                (-50, 50), BEHAVIOR_CONTRAST, 0)),
+            BEHAVIOR_FILTER: processor.FilterProcessor(fp_behavior)
         }
 
         self.create_sliders()
@@ -93,13 +93,16 @@ class MainWindow(QMainWindow):
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self._old_pos = event.globalPos()
 
-    # Self defined pySlot
+    # Called when a signal from the slider widget is emitted
     def on_slider_move(self, behavior_name, slider_value):
         if self._color_img is None:
             return
-        # Process the image when the slider is moved
-        self._processed_img = self._processors[behavior_name].process_image(
-            self._color_img, slider_value)
+        # Cache the processors unique value from it's respective slider position
+        self._processors[behavior_name].set_unique_value(slider_value)
+
+        # We need to loop through every processor and reprocess each time any slider is moved
+        for (_, p) in self._processors.items():
+            self._processed_img = p.process_image(self._color_img, self._processed_img)
 
         self.display_img(self._processed_img, self.rightImgLabel)
 
@@ -135,16 +138,6 @@ class MainWindow(QMainWindow):
 
         self._processed_img = cv2.warpAffine(self._color_img, rotation_mat, (int(np.ceil(nw)), int(np.ceil(nh))))
         self.display_img(self._processed_img, self.rightImgLabel)
-
-    def on_canny_slider_value_changed(self):
-        # Always set slider text
-        self.cannySliderPositionLabel.setText(str(self.cannySlider.value()))
-        if self._grayscale_img is None:
-            return
-
-        # Use the slider to determine canny image values
-        canny_image = cv2.Canny(self._color_img, self.cannySlider.value(), self.cannySlider.value() * 3)
-        self.display_img(canny_image, self.rightImgLabel)
 
     @pyqtSlot()
     def on_detect_clicked(self):
