@@ -17,6 +17,7 @@ MAIN_WINDOW_UI = 'coreUI/main_window.ui'
 BEHAVIOR_FILTER = "Filter:"
 BEHAVIOR_BRIGHTNESS = "Brightness:"
 BEHAVIOR_CONTRAST = "Contrast:"
+BEHAVIOR_ROTATION = "Rotation"
 
 
 class MainWindow(QMainWindow):
@@ -54,6 +55,11 @@ class MainWindow(QMainWindow):
                 (-50, 50), BEHAVIOR_CONTRAST, 0)),
             BEHAVIOR_FILTER: processor.FilterProcessor(fp_behavior)
         }
+
+        # Rotation behavior will be used independent of the sliders, since rotation uses a QDial/QSpinBox
+        rotation_behavior = utils.ProcessingBehavior(
+            (self.rotateImgDial.minimum(), self.rotateImgDial.maximum()), BEHAVIOR_ROTATION, 0)
+        self._rotation_processor = processor.RotationProcessor(rotation_behavior)
 
         self.create_sliders()
 
@@ -113,34 +119,8 @@ class MainWindow(QMainWindow):
         if self._color_img is None:
             return
 
-        angle = self.rotateImgDial.value()
-        scale = 1.0
-
-        w = self._color_img.shape[1]
-        h = self._color_img.shape[0]
-        r_angle = np.deg2rad(int(angle))  # Get the angle in radians
-
-        # Calculate new image width and height
-        nw = (abs(np.sin(r_angle) * h) + abs(np.cos(r_angle) * w)) * scale
-        nh = (abs(np.cos(r_angle) * h) + abs(np.sin(r_angle) * w)) * scale
-
-        # Get rotation matrix from openCV
-        rotation_mat = cv2.getRotationMatrix2D((nw * 0.5, nh * 0.5), angle, scale)
-
-        # Calculate the move from the old center to the new center combined w/ the rotation
-        # (dot prod of the rotation matrix and the new matrix)
-        rotation_move = np.dot(
-            rotation_mat,
-            np.array([(nw - w) * 0.5, (nh - h) * 0.5, 0])
-        )
-
-        # The move only affects the translation, so update the translation part of the transform
-        rotation_mat[0, 2] += rotation_move[0]
-        rotation_mat[1, 2] += rotation_move[1]
-
-        # The rotated image will never include processing, it will only be used for the dimensions
-        # We will always use the color image (original) for the base transformation calculations
-        self._rotated_img = cv2.warpAffine(self._color_img, rotation_mat, (int(np.ceil(nw)), int(np.ceil(nh))))
+        self._rotation_processor.set_unique_value(self.rotateImgDial.value())
+        self._rotated_img = self._rotation_processor.process_image(self._color_img, self._processed_img)
 
         # Do processing every time the image is rotated, this time used the processed image in place of the
         # un-modified image. We want to use the size/shape of the transformed image this time
