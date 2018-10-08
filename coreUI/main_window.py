@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         self._color_img = None              # Colored image
         self._grayscale_img = None          # Grayscale image
         self._processed_img = None          # Processed image
+        self._rotated_img = None            # Rotated image
 
         # Initially create a filter processing behavior, passing it the list of kernel names
         fp_behavior = utils.ProcessingBehavior((
@@ -102,7 +103,8 @@ class MainWindow(QMainWindow):
 
         # We need to loop through every processor and reprocess each time any slider is moved
         for (_, p) in self._processors.items():
-            self._processed_img = p.process_image(self._color_img, self._processed_img)
+            # Use the rotated image for any changed dimensions
+            self._processed_img = p.process_image(self._rotated_img, self._processed_img)
 
         self.display_img(self._processed_img, self.rightImgLabel)
 
@@ -136,12 +138,14 @@ class MainWindow(QMainWindow):
         rotation_mat[0, 2] += rotation_move[0]
         rotation_mat[1, 2] += rotation_move[1]
 
-        self._processed_img = cv2.warpAffine(self._color_img, rotation_mat, (int(np.ceil(nw)), int(np.ceil(nh))))
+        # The rotated image will never include processing, it will only be used for the dimensions
+        # We will always use the color image (original) for the base transformation calculations
+        self._rotated_img = cv2.warpAffine(self._color_img, rotation_mat, (int(np.ceil(nw)), int(np.ceil(nh))))
 
         # Do processing every time the image is rotated, this time used the processed image in place of the
         # un-modified image. We want to use the size/shape of the transformed image this time
         for (_, p) in self._processors.items():
-            self._processed_img = p.process_image(self._processed_img, self._processed_img)
+            self._processed_img = p.process_image(self._rotated_img, self._processed_img)
 
         self.display_img(self._processed_img, self.rightImgLabel)
 
@@ -205,6 +209,7 @@ class MainWindow(QMainWindow):
         self._color_img = cv2.imread(img_name)
         self._grayscale_img = cv2.cvtColor(self._color_img, cv2.COLOR_BGR2GRAY)
         self._processed_img = self._color_img.copy()
+        self._rotated_img = self._color_img.copy()
 
         if self._color_img is None:
             print(f"Invalid image path: {img_name}")
