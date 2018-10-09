@@ -9,6 +9,7 @@ SLIDER_WIDGET_UI = 'coreUI/slider_widget.ui'
 
 
 class SliderWidget(QWidget):
+    """Slider widget"""
 
     # Behavior signal relay
     # Emits (behavior name, slider value)
@@ -43,6 +44,10 @@ class SliderWidget(QWidget):
 
     @pyqtSlot()
     def on_slider_value_changed(self):
+        """
+        Handle when the slider value is changed
+        """
+
         # Update value label when the slider is moved
         self.sliderValueLabel.setText(str(self.behaviorSlider.value()))
 
