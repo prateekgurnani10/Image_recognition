@@ -18,6 +18,10 @@ BEHAVIOR_BRIGHTNESS = "Brightness:"
 BEHAVIOR_CONTRAST = "Contrast:"
 BEHAVIOR_ROTATION = "Rotation"
 
+# ComboBox options
+HIDE_FACIAL_RECOG = 0
+SHOW_FACIAL_RECOG = 1
+
 
 class MainWindow(QMainWindow):
     """Main UI window"""
@@ -37,10 +41,13 @@ class MainWindow(QMainWindow):
         self._old_pos = QPoint()            # QMainWindow old position (position tracking)
         self._cascades = utils.Cascades()   # Mapping of cascades to their cascade classifiers
         self._kernels = utils.Kernels()     # Kernels for image filtering
+
+        # Cached images
         self._color_img = None              # Colored image
         self._grayscale_img = None          # Grayscale image
         self._processed_img = None          # Processed image
         self._rotated_img = None            # Rotated image
+        self._detected_img = None           # Detected image
 
         # Initially create a filter processing behavior, passing it the list of kernel names
         fp_behavior = utils.ProcessingBehavior((
@@ -66,7 +73,7 @@ class MainWindow(QMainWindow):
         self.exit_button.clicked.connect(self.on_exit_button_clicked)
         self.importButton.clicked.connect(self.on_import_clicked)
         self.saveButton.clicked.connect(self.on_save_clicked)
-        self.detectButton.clicked.connect(self.on_detect_clicked)
+        self.facialRecogComboBox.currentIndexChanged.connect(self.on_facial_recog_cb_changed)
 
         # Image rotation connection loops
         # SpinBox and the dial are connected to each other's setters, along with each being able to
@@ -127,15 +134,14 @@ class MainWindow(QMainWindow):
 
         self.display_img(self._processed_img, self.rightImgLabel)
 
-    @pyqtSlot()
-    def rotate_image(self):
+    def rotate_image(self, rotation_angle):
         """
        Handle when an image is rotated via the dial or spinbox
         """
         if self._color_img is None:
             return
 
-        self._rotation_processor.set_unique_value(self.rotateImgDial.value())
+        self._rotation_processor.set_unique_value(rotation_angle)
         self._rotated_img = self._rotation_processor.process_image(self._color_img, self._processed_img)
 
         # Do processing every time the image is rotated, this time used the processed image in place of the
@@ -145,48 +151,47 @@ class MainWindow(QMainWindow):
 
         self.display_img(self._processed_img, self.rightImgLabel)
 
-    @pyqtSlot()
-    def on_detect_clicked(self):
+    def on_facial_recog_cb_changed(self, cb_index):
         """
         Handle when the detect button is clicked on the UI
         """
-        if self._grayscale_img is None:
-            return
+        if cb_index == SHOW_FACIAL_RECOG:
+            self.display_img(self._detected_img, self.leftImgLabel)
+        if cb_index == HIDE_FACIAL_RECOG:
+            self.display_img(self._color_img, self.leftImgLabel)
 
+    def detect(self):
         # Detect faces
         faces = self._cascades.cascades_list[utils.Cascades.CascadeList.FACE_CASCADE].detectMultiScale(
             self._grayscale_img, 1.3, 5)
 
+        num_faces = len(faces)
+        if num_faces == 1:
+            self.imgDescriptLabel.setText("There is one face detected in the imported photo.")
+        elif num_faces > 1:
+            self.imgDescriptLabel.setText(f"There are {num_faces} faces detected in the imported photo.")
+        else:
+            self.imgDescriptLabel.setText("No faces detected in imported photo.")
+
         for (x, y, w, h) in faces:
-            if self.detectFaceCheckBox.isChecked():
-                cv2.rectangle(self._processed_img, (x, y), (x + w, y + h), (255, 0, 0), 3)
-            else:
-                self._processed_img = self._color_img.copy()
+            cv2.rectangle(self._detected_img, (x, y), (x + w, y + h), (255, 0, 0), 3)
 
             roi_grayscale = self._grayscale_img[y: y + h, x: x + w]
-            roi_color = self._color_img[y: y + h, x: x + w]
+            roi_color = self._detected_img[y: y + h, x: x + w]
 
-            if self.detectEyesCheckBox.isChecked():
-                # Detect eyes
-                eyes = self._cascades.cascades_list[utils.Cascades.CascadeList.EYE_CASCADE].detectMultiScale(
-                    roi_grayscale, 1.1, 22)
+            # Detect eyes
+            eyes = self._cascades.cascades_list[utils.Cascades.CascadeList.EYE_CASCADE].detectMultiScale(
+                roi_grayscale, 1.1, 22)
 
-                for (ex, ey, ew, eh) in eyes:
-                    cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
-            else:
-                self._processed_img[y: y + h, x: x + w] = self._color_img[y: y + h, x: x + w].copy()
+            for (ex, ey, ew, eh) in eyes:
+                cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
 
-            if self.detectSmileCheckBox.isChecked():
-                # Detect smiles
-                smile = self._cascades.cascades_list[utils.Cascades.CascadeList.SMILE_CASCADE].detectMultiScale(
-                    roi_grayscale, 1.7, 18)
+            # Detect smiles
+            smile = self._cascades.cascades_list[utils.Cascades.CascadeList.SMILE_CASCADE].detectMultiScale(
+                roi_grayscale, 1.7, 18)
 
-                for (sx, sy, sw, sh) in smile:
-                    cv2.rectangle(roi_color, (sx, sy), (sx + sw, sy + sh), (0, 0, 255), 2)
-            else:
-                self._processed_img[y: y + h, x: x + w] = self._color_img[y: y + h, x: x + w].copy()
-
-        self.display_img(self._processed_img, self.rightImgLabel)
+            for (sx, sy, sw, sh) in smile:
+                cv2.rectangle(roi_color, (sx, sy), (sx + sw, sy + sh), (0, 0, 255), 2)
 
     @pyqtSlot()
     def on_import_clicked(self):
@@ -220,15 +225,20 @@ class MainWindow(QMainWindow):
         :return: Return nothing if the image is not found
         """
         self._color_img = cv2.imread(img_path)
+        if self._color_img is None:
+            return
+
         self._grayscale_img = cv2.cvtColor(self._color_img, cv2.COLOR_BGR2GRAY)
         self._processed_img = self._color_img.copy()
         self._rotated_img = self._color_img.copy()
+        self._detected_img = self._color_img.copy()
 
-        if self._color_img is None:
-            return
-        else:
-            # Display the color image on the left panel first
-            self.display_img(self._color_img, self.leftImgLabel)
+        # Display the original image on both labels on import
+        self.display_img(self._color_img, self.leftImgLabel)
+        self.display_img(self._color_img, self.rightImgLabel)
+
+        # Detect last because this will cause slight lag between the import and display
+        self.detect()
 
     @staticmethod
     def display_img(image, image_label):
