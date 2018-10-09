@@ -5,27 +5,45 @@ from abc import ABCMeta, abstractmethod
 
 
 class ImageProcessor:
-    """ Abstract class for behavior based image processing.
-    """
+    """Abstract class for behavior based image processing"""
     __metaclass__ = ABCMeta
 
     @abstractmethod
     def __init__(self, behavior):
-        self._behavior = behavior
-        self._unique_value = 0
+        """
+        Constructor
+        :param behavior: Image processing behavior
+        """
+        self._behavior = behavior   # Processing behavior
+        self._unique_value = 0      # Processors unique value
 
     @abstractmethod
     def process_image(self, image_u, image_p):
+        """
+        Do processing on an image
+        :param image_u: Unchanged image (the original image)
+        :param image_p: Processed image (image that has already had processing applied to it)
+        :return: An image with additional processing done to it
+        """
         pass
 
     def behavior(self):
+        """
+        Get the behavior of the processor
+        :return: A Processing behavior
+        """
         return self._behavior
 
     def set_unique_value(self, value):
+        """
+        Sets the processors unique value (which will be used for it's calculations ie: brightness/rotation angle
+        :param value: The processors unique value
+        """
         self._unique_value = value
 
 
 class FilterProcessor(ImageProcessor):
+    """Filtering processor which applies kernel transformations to an image"""
     def __init__(self, behavior):
         super(FilterProcessor, self).__init__(behavior)
         self._kernels = utils.Kernels().kernels_list
@@ -36,6 +54,7 @@ class FilterProcessor(ImageProcessor):
 
 
 class BrightnessProcessor(ImageProcessor):
+    """Brightness processor which will adjust brightness based on a given value"""
     def __init__(self, behavior):
         super(BrightnessProcessor, self).__init__(behavior)
 
@@ -45,6 +64,7 @@ class BrightnessProcessor(ImageProcessor):
 
 
 class ContrastProcessor(ImageProcessor):
+    """Contrast processor which will adjust contrast based on a given value"""
     def __init__(self, behavior):
         super(ContrastProcessor, self).__init__(behavior)
 
@@ -54,6 +74,7 @@ class ContrastProcessor(ImageProcessor):
 
 
 class RotationProcessor(ImageProcessor):
+    """Rotation processor which apply matrix transformations to an original image based on a given angle"""
     def __init__(self, behavior):
         super(RotationProcessor, self).__init__(behavior)
 

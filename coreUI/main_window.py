@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 from coreUI import slider_widget as slider
 from utils import processing_utils as utils
 from core import image_processor as processor
@@ -21,6 +20,7 @@ BEHAVIOR_ROTATION = "Rotation"
 
 
 class MainWindow(QMainWindow):
+    """Main UI window"""
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -76,15 +76,20 @@ class MainWindow(QMainWindow):
         self.rotateImgDial.valueChanged.connect(self.rotateImgSpinBox.setValue)
         self.rotateImgSpinBox.valueChanged.connect(self.rotateImgDial.setValue)
 
-    # Create a slider, passing the processor's behavior to the slider
-    # Connect each widget to an on_slider_move slot which will catch an emitted slider behavior model
     def create_sliders(self):
+        """
+        Creates a slider for each processing behavior, and connects each of the sliders to a widget
+        container. The widget will emit a signal every time it's slider is moved
+        """
         for key, value in self._processors.items():
             widget = slider.SliderWidget(value.behavior())
             widget.slider_moved.connect(self.on_slider_move)
             self.sliderLayout.addWidget(widget)
 
     def center(self):
+        """
+        Move the UI location to the center of the screen
+        """
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
@@ -92,6 +97,10 @@ class MainWindow(QMainWindow):
 
     # Override
     def mousePressEvent(self, event):
+        """
+        Catch when the mouse is pressed (this is used for moving the UI around)
+        :param event: Mouse press event
+        """
         self._old_pos = event.globalPos()
 
     # Override
@@ -100,8 +109,12 @@ class MainWindow(QMainWindow):
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self._old_pos = event.globalPos()
 
-    # Called when a signal from the slider widget is emitted
     def on_slider_move(self, behavior_name, slider_value):
+        """
+        Slot which catches emitted slider movements
+        :param behavior_name: Processor behavior.name
+        :param slider_value: QSlider value from the UI
+        """
         if self._color_img is None:
             return
         # Cache the processors unique value from it's respective slider position
@@ -116,6 +129,9 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def rotate_image(self):
+        """
+       Handle when an image is rotated via the dial or spinbox
+        """
         if self._color_img is None:
             return
 
@@ -131,6 +147,9 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_detect_clicked(self):
+        """
+        Handle when the detect button is clicked on the UI
+        """
         if self._grayscale_img is None:
             return
 
@@ -171,34 +190,53 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_import_clicked(self):
+        """
+        Handle when the import button is clicked on the UI
+        """
         (filename, _) = QFileDialog.getOpenFileName(self, 'Open File', QDir.home().path(), "Image Files (*.jpg)")
         if filename:
             self.load_image(filename)
 
     @pyqtSlot()
     def on_save_clicked(self):
+        """
+        Handle when the save button is clicked on the UI
+        """
         (filename, _) = QFileDialog.getSaveFileName(self, 'Save File', QDir.home().path(), "Image Files (*.jpg)")
         if filename:
             cv2.imwrite(filename, self._processed_img)
 
     @pyqtSlot()
     def on_exit_button_clicked(self):
+        """
+        Handle when the exit button is clicked on the UI
+        """
         self.close()
 
-    def load_image(self, img_name):
-        self._color_img = cv2.imread(img_name)
+    def load_image(self, img_path):
+        """
+        Loads an image
+        :param img_path: The path to (including) the image
+        :return: Return nothing if the image is not found
+        """
+        self._color_img = cv2.imread(img_path)
         self._grayscale_img = cv2.cvtColor(self._color_img, cv2.COLOR_BGR2GRAY)
         self._processed_img = self._color_img.copy()
         self._rotated_img = self._color_img.copy()
 
         if self._color_img is None:
-            print(f"Invalid image path: {img_name}")
+            return
         else:
             # Display the color image on the left panel first
             self.display_img(self._color_img, self.leftImgLabel)
 
     @staticmethod
     def display_img(image, image_label):
+        """
+        Display an image on a given image label
+        :param image: The image to display (from openCV)
+        :param image_label: The QLabel to display the image on
+        """
         # Ensure the proper image format before storing as a QImage
         q_format = QImage.Format_Indexed8
 

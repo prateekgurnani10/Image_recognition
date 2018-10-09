@@ -3,10 +3,8 @@ import numpy as np
 from enum import Enum
 
 
-# Image processing utility objects
-
-
 class ProcessingBehavior:
+    """Image processing behavior"""
 
     def __init__(self, min_max, name, default):
         self.min_max = min_max  # Behavior min and max processing ranges
@@ -16,8 +14,10 @@ class ProcessingBehavior:
 
 
 class Cascades:
+    """Cascade helper which contains an easy way to import and store cascades"""
 
     class CascadeList(Enum):
+        """Cascade list enum class"""
         EYE_CASCADE = 0
         FACE_CASCADE = 1
         SMILE_CASCADE = 2
@@ -31,8 +31,10 @@ class Cascades:
 
 
 class Kernels:
+    """Kernel helper which contains a container of kernels"""
 
     def __init__(self):
+        # 2-tuples which contain (kernel string name, kernel matrix)
         self.kernels_list = [
             # Any filtering position 0 should use the identity as default
             ("Identity", np.array([
