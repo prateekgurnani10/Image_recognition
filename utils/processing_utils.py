@@ -20,13 +20,11 @@ class Cascades:
         """Cascade list enum class"""
         EYE_CASCADE = 0
         FACE_CASCADE = 1
-        SMILE_CASCADE = 2
 
     def __init__(self):
         self.cascades_list = {
             self.CascadeList.EYE_CASCADE: cv2.CascadeClassifier("cascades/haarcascade_eye.xml"),
-            self.CascadeList.FACE_CASCADE: cv2.CascadeClassifier("cascades/haarcascade_frontalface.xml"),
-            self.CascadeList.SMILE_CASCADE: cv2.CascadeClassifier("cascades/haarcascade_smile.xml")
+            self.CascadeList.FACE_CASCADE: cv2.CascadeClassifier("cascades/haarcascade_frontalface.xml")
         }
 
 

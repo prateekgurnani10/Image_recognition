@@ -12,6 +12,9 @@ from PyQt5.uic import loadUi
 # UI form
 MAIN_WINDOW_UI = 'coreUI/main_window.ui'
 
+# Project logo
+LOGO_PATH = 'tests/images/logo.jpg'
+
 # String definitions
 BEHAVIOR_FILTER = "Filter:"
 BEHAVIOR_BRIGHTNESS = "Brightness:"
@@ -185,13 +188,6 @@ class MainWindow(QMainWindow):
 
             for (ex, ey, ew, eh) in eyes:
                 cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
-
-            # Detect smiles
-            smile = self._cascades.cascades_list[utils.Cascades.CascadeList.SMILE_CASCADE].detectMultiScale(
-                roi_grayscale, 1.7, 18)
-
-            for (sx, sy, sw, sh) in smile:
-                cv2.rectangle(roi_color, (sx, sy), (sx + sw, sy + sh), (0, 0, 255), 2)
 
     @pyqtSlot()
     def on_import_clicked(self):

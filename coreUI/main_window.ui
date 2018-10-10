@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1113</width>
+    <width>1120</width>
     <height>888</height>
    </rect>
   </property>
@@ -95,7 +95,7 @@
     <property name="geometry">
      <rect>
       <x>520</x>
-      <y>220</y>
+      <y>260</y>
       <width>71</width>
       <height>71</height>
      </rect>
@@ -111,7 +111,7 @@
     <property name="geometry">
      <rect>
       <x>510</x>
-      <y>300</y>
+      <y>340</y>
       <width>81</width>
       <height>41</height>
      </rect>
@@ -138,7 +138,7 @@
     <property name="geometry">
      <rect>
       <x>530</x>
-      <y>190</y>
+      <y>230</y>
       <width>51</width>
       <height>21</height>
      </rect>
@@ -196,8 +196,8 @@
      <rect>
       <x>10</x>
       <y>800</y>
-      <width>201</width>
-      <height>31</height>
+      <width>182</width>
+      <height>24</height>
      </rect>
     </property>
     <property name="font">
@@ -219,6 +219,25 @@
      </property>
     </item>
    </widget>
+   <widget class="QLabel" name="logoLabel">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>90</y>
+      <width>91</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menubar">
@@ -226,7 +245,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1113</width>
+     <width>1120</width>
      <height>26</height>
     </rect>
    </property>
