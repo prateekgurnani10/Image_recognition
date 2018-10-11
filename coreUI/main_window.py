@@ -12,9 +12,6 @@ from PyQt5.uic import loadUi
 # UI form
 MAIN_WINDOW_UI = 'coreUI/main_window.ui'
 
-# Project logo
-LOGO_PATH = 'tests/images/logo.jpg'
-
 # String definitions
 BEHAVIOR_FILTER = "Filter:"
 BEHAVIOR_BRIGHTNESS = "Brightness"
@@ -158,6 +155,9 @@ class MainWindow(QMainWindow):
         """
         Handle when the detect button is clicked on the UI
         """
+        if self._color_img is None:
+            return
+
         if cb_index == SHOW_FACIAL_RECOG:
             self.display_img(self._detected_img, self.leftImgLabel)
         if cb_index == HIDE_FACIAL_RECOG:
@@ -229,12 +229,15 @@ class MainWindow(QMainWindow):
         self._rotated_img = self._color_img.copy()
         self._detected_img = self._color_img.copy()
 
-        # Display the original image on both labels on import
-        self.display_img(self._color_img, self.leftImgLabel)
-        self.display_img(self._color_img, self.rightImgLabel)
-
-        # Detect last because this will cause slight lag between the import and display
         self.detect()
+
+        if self.facialRecogComboBox.currentIndex() == SHOW_FACIAL_RECOG:
+            self.display_img(self._detected_img, self.leftImgLabel)
+        else:
+            self.display_img(self._color_img, self.leftImgLabel)
+
+        # Display the original image on the right label on import
+        self.display_img(self._color_img, self.rightImgLabel)
 
     @staticmethod
     def display_img(image, image_label):
