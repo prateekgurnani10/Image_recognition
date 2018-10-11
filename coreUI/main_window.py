@@ -17,8 +17,8 @@ LOGO_PATH = 'tests/images/logo.jpg'
 
 # String definitions
 BEHAVIOR_FILTER = "Filter:"
-BEHAVIOR_BRIGHTNESS = "Brightness:"
-BEHAVIOR_CONTRAST = "Contrast:"
+BEHAVIOR_BRIGHTNESS = "Brightness"
+BEHAVIOR_CONTRAST = "Contrast"
 BEHAVIOR_ROTATION = "Rotation"
 
 # ComboBox options
