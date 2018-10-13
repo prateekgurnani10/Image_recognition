@@ -3,9 +3,9 @@ from coreUI import slider_widget as slider
 from utils import processing_utils as utils
 from core import image_processor as processor
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSlot, QDir, QPoint
+from PyQt5.QtCore import pyqtSlot, QDir
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton, QDesktopWidget
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QDesktopWidget
 from PyQt5.uic import loadUi
 
 
@@ -34,11 +34,7 @@ class MainWindow(QMainWindow):
         self.center()
         # Webcam option bar / Enable sub-option
         self.menuBar().addMenu("&Webcam").addAction("&Enable")
-        # Exit button which will be added to the top menu bar
-        self.exit_button = QPushButton(" X ", self.menuBar())
-        self.menuBar().setCornerWidget(self.exit_button, QtCore.Qt.TopRightCorner)
 
-        self._old_pos = QPoint()            # QMainWindow old position (position tracking)
         self._cascades = utils.Cascades()   # Mapping of cascades to their cascade classifiers
         self._kernels = utils.Kernels()     # Kernels for image filtering
 
@@ -70,7 +66,6 @@ class MainWindow(QMainWindow):
 
         self.create_sliders()
 
-        self.exit_button.clicked.connect(self.on_exit_button_clicked)
         self.importButton.clicked.connect(self.on_import_clicked)
         self.saveButton.clicked.connect(self.on_save_clicked)
         self.facialRecogComboBox.currentIndexChanged.connect(self.on_facial_recog_cb_changed)
@@ -87,6 +82,7 @@ class MainWindow(QMainWindow):
         """
         Creates a slider for each processing behavior, and connects each of the sliders to a widget
         container. The widget will emit a signal every time it's slider is moved
+        :return:
         """
         for key, value in self._processors.items():
             widget = slider.SliderWidget(value.behavior())
@@ -96,25 +92,12 @@ class MainWindow(QMainWindow):
     def center(self):
         """
         Move the UI location to the center of the screen
+        :return:
         """
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-
-    # Override
-    def mousePressEvent(self, event):
-        """
-        Catch when the mouse is pressed (this is used for moving the UI around)
-        :param event: Mouse press event
-        """
-        self._old_pos = event.globalPos()
-
-    # Override
-    def mouseMoveEvent(self, event):
-        delta = QPoint(event.globalPos() - self._old_pos)
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self._old_pos = event.globalPos()
 
     def on_slider_move(self, behavior_name, slider_value):
         """
@@ -136,7 +119,9 @@ class MainWindow(QMainWindow):
 
     def rotate_image(self, rotation_angle):
         """
-       Handle when an image is rotated via the dial or spinbox
+        Handle when an image is rotated via the dial or spinbox
+        :param rotation_angle: Angle of rotation from the QDial
+        :return:
         """
         if self._color_img is None:
             return
@@ -164,7 +149,10 @@ class MainWindow(QMainWindow):
             self.display_img(self._color_img, self.leftImgLabel)
 
     def detect(self):
-        # Detect faces
+        """
+        Detect faces and eyes
+        :return:
+        """
         faces = self._cascades.cascades_list[utils.Cascades.CascadeList.FACE_CASCADE].detectMultiScale(
             self._grayscale_img, 1.3, 5)
 
@@ -193,6 +181,7 @@ class MainWindow(QMainWindow):
     def on_import_clicked(self):
         """
         Handle when the import button is clicked on the UI
+        :return:
         """
         (filename, _) = QFileDialog.getOpenFileName(self, 'Open File', QDir.home().path(), "Image Files (*.jpg)")
         if filename:
@@ -202,6 +191,7 @@ class MainWindow(QMainWindow):
     def on_save_clicked(self):
         """
         Handle when the save button is clicked on the UI
+        :return:
         """
         (filename, _) = QFileDialog.getSaveFileName(self, 'Save File', QDir.home().path(), "Image Files (*.jpg)")
         if filename:
@@ -211,6 +201,7 @@ class MainWindow(QMainWindow):
     def on_exit_button_clicked(self):
         """
         Handle when the exit button is clicked on the UI
+        :return:
         """
         self.close()
 
@@ -236,6 +227,8 @@ class MainWindow(QMainWindow):
         else:
             self.display_img(self._color_img, self.leftImgLabel)
 
+        # self.display_grayscale_img(self._color_img, self.rightImgLabel)
+
         # Display the original image on the right label on import
         self.display_img(self._color_img, self.rightImgLabel)
 
@@ -245,6 +238,7 @@ class MainWindow(QMainWindow):
         Display an image on a given image label
         :param image: The image to display (from openCV)
         :param image_label: The QLabel to display the image on
+        :return:
         """
         # Ensure the proper image format before storing as a QImage
         q_format = QImage.Format_Indexed8
@@ -255,13 +249,37 @@ class MainWindow(QMainWindow):
             else:
                 q_format = QImage.Format_RGB888
 
-        q_image = QImage(image, image.shape[1], image.shape[0], image.strides[0], q_format)
+        (h, w) = image.shape[:2]
+        q_image = QImage(image, w, h, image.strides[0], q_format)
         q_image = q_image.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
 
         # Since openCV loads an image as BGR, we need to convert from BGR -> RBG
         img = q_image.rgbSwapped()
-        image_label.setPixmap(QPixmap.fromImage(img))
 
         # Resize the label to the scaled images width and height
         image_label.resize(img.rect().width(), img.rect().height())
         image_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        # Set the image -> pixmap -> label
+        image_label.setPixmap(QPixmap.fromImage(img))
+
+    @staticmethod
+    def display_grayscale_img(image, image_label):
+
+        (h, w) = image.shape[:2]
+
+        q_image = QImage(image, w, h, QImage.Format_RGB32)
+        q_image = q_image.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
+        q_image = q_image.rgbSwapped()
+
+        # for x in range(q_image.size().width()):
+        #     for y in range(q_image.size().height()):
+        #         # Get the current pixel
+        #         current_pixel_color = QColor(q_image.pixel(x, y))
+        #         gray_average = int((current_pixel_color.red() +
+        #                             current_pixel_color.green() +
+        #                             current_pixel_color.blue()) / 3)
+        #         q_image.setPixel(x, y, QColor(gray_average, gray_average, gray_average).rgb())
+
+        image_label.resize(q_image.rect().width(), q_image.rect().height())
+        image_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        image_label.setPixmap(QPixmap.fromImage(q_image))
