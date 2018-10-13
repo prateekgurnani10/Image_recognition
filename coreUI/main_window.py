@@ -1,7 +1,8 @@
 import cv2
+from core import detector
+from core import image_processor as processor
 from coreUI import slider_widget as slider
 from utils import processing_utils as utils
-from core import image_processor as processor
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot, QDir
 from PyQt5.QtGui import QImage, QPixmap
@@ -35,8 +36,11 @@ class MainWindow(QMainWindow):
         # Webcam option bar / Enable sub-option
         self.menuBar().addMenu("&Webcam").addAction("&Enable")
 
-        self._cascades = utils.Cascades()   # Mapping of cascades to their cascade classifiers
-        self._kernels = utils.Kernels()     # Kernels for image filtering
+        # Facial recognition: Face/eyes detector
+        self._detector = detector.Detector()
+
+        # Filtering Kernels
+        self._kernels = utils.Kernels()
 
         # Cached images
         self._color_img = None              # Colored image
@@ -148,34 +152,18 @@ class MainWindow(QMainWindow):
         if cb_index == HIDE_FACIAL_RECOG:
             self.display_img(self._color_img, self.leftImgLabel)
 
-    def detect(self):
+    def display_detection(self):
         """
-        Detect faces and eyes
+        Display results after detection
         :return:
         """
-        faces = self._cascades.cascades_list[utils.Cascades.CascadeList.FACE_CASCADE].detectMultiScale(
-            self._grayscale_img, 1.3, 5)
-
-        num_faces = len(faces)
+        num_faces = self._detector.faces()
         if num_faces == 1:
             self.imgDescriptLabel.setText("There is one face detected in the imported photo.")
         elif num_faces > 1:
             self.imgDescriptLabel.setText(f"There are {num_faces} faces detected in the imported photo.")
         else:
             self.imgDescriptLabel.setText("No faces detected in imported photo.")
-
-        for (x, y, w, h) in faces:
-            cv2.rectangle(self._detected_img, (x, y), (x + w, y + h), (255, 0, 0), 3)
-
-            roi_grayscale = self._grayscale_img[y: y + h, x: x + w]
-            roi_color = self._detected_img[y: y + h, x: x + w]
-
-            # Detect eyes
-            eyes = self._cascades.cascades_list[utils.Cascades.CascadeList.EYE_CASCADE].detectMultiScale(
-                roi_grayscale, 1.1, 22)
-
-            for (ex, ey, ew, eh) in eyes:
-                cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
 
     @pyqtSlot()
     def on_import_clicked(self):
@@ -220,14 +208,14 @@ class MainWindow(QMainWindow):
         self._rotated_img = self._color_img.copy()
         self._detected_img = self._color_img.copy()
 
-        self.detect()
+        # Try to detect faces on import
+        self._detected_img = self._detector.detect(self._grayscale_img, self._detected_img)
+        self.display_detection()
 
         if self.facialRecogComboBox.currentIndex() == SHOW_FACIAL_RECOG:
             self.display_img(self._detected_img, self.leftImgLabel)
         else:
             self.display_img(self._color_img, self.leftImgLabel)
-
-        # self.display_grayscale_img(self._color_img, self.rightImgLabel)
 
         # Display the original image on the right label on import
         self.display_img(self._color_img, self.rightImgLabel)
@@ -261,25 +249,3 @@ class MainWindow(QMainWindow):
         image_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
         # Set the image -> pixmap -> label
         image_label.setPixmap(QPixmap.fromImage(img))
-
-    @staticmethod
-    def display_grayscale_img(image, image_label):
-
-        (h, w) = image.shape[:2]
-
-        q_image = QImage(image, w, h, QImage.Format_RGB32)
-        q_image = q_image.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
-        q_image = q_image.rgbSwapped()
-
-        # for x in range(q_image.size().width()):
-        #     for y in range(q_image.size().height()):
-        #         # Get the current pixel
-        #         current_pixel_color = QColor(q_image.pixel(x, y))
-        #         gray_average = int((current_pixel_color.red() +
-        #                             current_pixel_color.green() +
-        #                             current_pixel_color.blue()) / 3)
-        #         q_image.setPixel(x, y, QColor(gray_average, gray_average, gray_average).rgb())
-
-        image_label.resize(q_image.rect().width(), q_image.rect().height())
-        image_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        image_label.setPixmap(QPixmap.fromImage(q_image))
