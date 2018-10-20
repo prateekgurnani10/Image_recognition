@@ -47,18 +47,36 @@ class Kernels:
                 [0, -1,  0]
             ])),
 
-            ("Weak Gaussian", np.array([
+            ("Blurring", np.array([
+                [1, 1, 1],
+                [1, 1, 1],
+                [1, 1, 1]
+            ], np.float32) / 9),  # Normalize the matrix by dividing by the number of total entries
+
+            ("Blurring", np.array([
                 [1, 2, 1],
                 [2, 4, 2],
                 [1, 2, 1]
             ], np.float32) / 16),
 
             # Up (x,_) for a more blurry effect or to add more noise to the image
-            ("Strong Gaussian 1", cv2.getGaussianKernel(8, 0)),
+            ("Blurring", cv2.getGaussianKernel(8, 0)),
 
-            ("Strong Gaussian 2", np.array([
-                [1, 1, 1],
-                [1, 1, 1],
-                [1, 1, 1]
-            ], np.float32) / 9)  # Normalize the matrix by dividing by the number of total entries
+            ("Edge Detection", np.array([
+                [1,  0, -1],
+                [0,  0,  0],
+                [-1, 0,  1]
+            ])),
+
+            ("Edge Detection", np.array([
+                [0,  1,  0],
+                [1, -4,  1],
+                [0,  1,  0]
+            ])),
+
+            ("Edge Detection", np.array([
+                [-1, -1, -1],
+                [-1,  8, -1],
+                [-1, -1, -1]
+            ]))
         ]

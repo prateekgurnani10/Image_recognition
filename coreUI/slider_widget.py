@@ -46,9 +46,8 @@ class SliderWidget(QWidget):
     def on_slider_value_changed(self):
         """
         Handle when the slider value is changed
+        :return:
         """
-
-        # Update value label when the slider is moved
         self.sliderValueLabel.setText(str(self.behaviorSlider.value()))
 
         if len(self._setting_info) > 0:

@@ -13,6 +13,7 @@ class ImageProcessor:
         """
         Constructor
         :param behavior: Image processing behavior
+        :return:
         """
         self._behavior = behavior   # Processing behavior
         self._unique_value = 0      # Processors unique value
@@ -38,6 +39,7 @@ class ImageProcessor:
         """
         Sets the processors unique value (which will be used for it's calculations ie: brightness/rotation angle
         :param value: The processors unique value
+        :return:
         """
         self._unique_value = value
 
