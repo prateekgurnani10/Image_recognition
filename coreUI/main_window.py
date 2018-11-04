@@ -88,8 +88,8 @@ class MainWindow(QMainWindow):
         container. The widget will emit a signal every time it's slider is moved
         :return:
         """
-        for key, value in self._processors.items():
-            widget = slider.SliderWidget(value.behavior())
+        for (_, v) in self._processors.items():
+            widget = slider.SliderWidget(v.behavior())
             widget.slider_moved.connect(self.on_slider_move)
             self.sliderLayout.addWidget(widget)
 
@@ -111,6 +111,7 @@ class MainWindow(QMainWindow):
         """
         if self._color_img is None:
             return
+
         # Cache the processors unique value from it's respective slider position
         self._processors[behavior_name].set_unique_value(slider_value)
 
