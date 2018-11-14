@@ -33,8 +33,10 @@ class MainWindow(QMainWindow):
 
         # Center the window on launch
         self.center()
-        # Webcam option bar / Enable sub-option
-        self.menuBar().addMenu("&Webcam").addAction("&Enable")
+        
+        # Top menu bar options
+        self.menuBar().addMenu("&Webcam Options").addAction("&Enable")
+        self.menuBar().addMenu("&Image Options").addAction("&Description")
 
         # Facial recognition: Face/eyes detector
         self._detector = detector.Detector()
