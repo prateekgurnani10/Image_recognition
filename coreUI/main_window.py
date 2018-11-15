@@ -2,6 +2,7 @@ import cv2
 from core import detector
 from core import image_processor as processor
 from coreUI import slider_widget as slider
+from coreUI.image_description_dialog import ImageDescriptionDialog
 from utils import processing_utils as utils
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot, QDir
@@ -33,10 +34,15 @@ class MainWindow(QMainWindow):
 
         # Center the window on launch
         self.center()
-        
+
         # Top menu bar options
-        self.menuBar().addMenu("&Webcam Options").addAction("&Enable")
-        self.menuBar().addMenu("&Image Options").addAction("&Description")
+        webcam_options = self.menuBar().addMenu("&Webcam Options")
+        self.enable_webcam_action = webcam_options.addAction("&Enable")
+
+        image_options = self.menuBar().addMenu("&Image Options")
+        self.image_descript_action = image_options.addAction("&Description")
+        # Connect the action to open the dialog window
+        self.image_descript_action.triggered.connect(self.open_image_description_dialog)
 
         # Facial recognition: Face/eyes detector
         self._detector = detector.Detector()
@@ -50,6 +56,8 @@ class MainWindow(QMainWindow):
         self._processed_img = None          # Processed image
         self._rotated_img = None            # Rotated image
         self._detected_img = None           # Detected image
+
+        self._image_description_dialog = None
 
         # Initially create a filter processing behavior, passing it the list of kernel names
         fp_behavior = utils.ProcessingBehavior((
@@ -83,6 +91,18 @@ class MainWindow(QMainWindow):
         self.rotateImgSpinBox.valueChanged.connect(self.rotate_image)
         self.rotateImgDial.valueChanged.connect(self.rotateImgSpinBox.setValue)
         self.rotateImgSpinBox.valueChanged.connect(self.rotateImgDial.setValue)
+
+    def open_image_description_dialog(self):
+        """
+        Open the image description dialog menu. Ensure that an image is already imported
+        :return: Null if an image has not yet been imported
+        """
+        # Create a new image description dialog and show the window
+        if self._color_img is None:
+            return
+
+        self._image_description_dialog = ImageDescriptionDialog(self._color_img)
+        self._image_description_dialog.show()
 
     def create_sliders(self):
         """
