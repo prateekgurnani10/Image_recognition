@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 from enum import Enum
 
+from PyQt5 import QtCore
+from PyQt5.QtGui import QImage, QPixmap
+
 
 class ProcessingBehavior:
     """Image processing behavior"""
@@ -80,3 +83,33 @@ class Kernels:
                 [-1, -1, -1]
             ]))
         ]
+
+
+def display_img(image, image_label):
+    """
+    Display an image on a given image label
+    :param image: The image to display (from openCV)
+    :param image_label: The QLabel to display the image on
+    :return:
+    """
+    # Ensure the proper image format before storing as a QImage
+    q_format = QImage.Format_Indexed8
+
+    if len(image.shape) == 3:  # rows[0], cols[1], channels[2]
+        if image.shape[2] == 4:
+            q_format = QImage.Format_RGBA8888
+        else:
+            q_format = QImage.Format_RGB888
+
+    (h, w) = image.shape[:2]
+    q_image = QImage(image, w, h, image.strides[0], q_format)
+    q_image = q_image.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
+
+    # Since openCV loads an image as BGR, we need to convert from BGR -> RBG
+    img = q_image.rgbSwapped()
+
+    # Resize the label to the scaled images width and height
+    image_label.resize(img.rect().width(), img.rect().height())
+    image_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+    # Set the image -> pixmap -> label
+    image_label.setPixmap(QPixmap.fromImage(img))
