@@ -15,3 +15,4 @@ class ImageDescriptionDialog(QDialog):
         # CV image that is passed to the dialog menu
         # Note: We do not want a dialog without an image to accompany it
         self._image = image
+
