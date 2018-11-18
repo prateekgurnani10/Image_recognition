@@ -2,10 +2,9 @@ import cv2
 from core import detector
 from core import image_processor as processor
 from coreUI import slider_widget as slider
+from coreUI.image_description_dialog import ImageDescriptionDialog
 from utils import processing_utils as utils
-from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot, QDir
-from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QDesktopWidget
 from PyQt5.uic import loadUi
 
@@ -33,8 +32,15 @@ class MainWindow(QMainWindow):
 
         # Center the window on launch
         self.center()
-        # Webcam option bar / Enable sub-option
-        self.menuBar().addMenu("&Webcam").addAction("&Enable")
+
+        # Top menu bar options
+        webcam_options = self.menuBar().addMenu("&Webcam Options")
+        self.enable_webcam_action = webcam_options.addAction("&Enable")
+
+        image_options = self.menuBar().addMenu("&Image Options")
+        self.image_descript_action = image_options.addAction("&Description")
+        # Connect the action to open the dialog window
+        self.image_descript_action.triggered.connect(self.open_image_description_dialog)
 
         # Facial recognition: Face/eyes detector
         self._detector = detector.Detector()
@@ -48,6 +54,8 @@ class MainWindow(QMainWindow):
         self._processed_img = None          # Processed image
         self._rotated_img = None            # Rotated image
         self._detected_img = None           # Detected image
+
+        self._image_description_dialog = None
 
         # Initially create a filter processing behavior, passing it the list of kernel names
         fp_behavior = utils.ProcessingBehavior((
@@ -81,6 +89,18 @@ class MainWindow(QMainWindow):
         self.rotateImgSpinBox.valueChanged.connect(self.rotate_image)
         self.rotateImgDial.valueChanged.connect(self.rotateImgSpinBox.setValue)
         self.rotateImgSpinBox.valueChanged.connect(self.rotateImgDial.setValue)
+
+    def open_image_description_dialog(self):
+        """
+        Open the image description dialog menu. Ensure that an image is already imported
+        :return: Null if an image has not yet been imported
+        """
+        # Create a new image description dialog and show the window
+        if self._color_img is None:
+            return
+
+        self._image_description_dialog = ImageDescriptionDialog(self._color_img)
+        self._image_description_dialog.show()
 
     def create_sliders(self):
         """
@@ -120,7 +140,7 @@ class MainWindow(QMainWindow):
             # Use the rotated image for any changed dimensions
             self._processed_img = p.process_image(self._rotated_img, self._processed_img)
 
-        self.display_img(self._processed_img, self.rightImgLabel)
+        utils.display_img(self._processed_img, self.rightImgLabel)
 
     def rotate_image(self, rotation_angle):
         """
@@ -139,7 +159,7 @@ class MainWindow(QMainWindow):
         for (_, p) in self._processors.items():
             self._processed_img = p.process_image(self._rotated_img, self._processed_img)
 
-        self.display_img(self._processed_img, self.rightImgLabel)
+        utils.display_img(self._processed_img, self.rightImgLabel)
 
     def on_facial_recog_cb_changed(self, cb_index):
         """
@@ -149,9 +169,9 @@ class MainWindow(QMainWindow):
             return
 
         if cb_index == SHOW_FACIAL_RECOG:
-            self.display_img(self._detected_img, self.leftImgLabel)
+            utils.display_img(self._detected_img, self.leftImgLabel)
         if cb_index == HIDE_FACIAL_RECOG:
-            self.display_img(self._color_img, self.leftImgLabel)
+            utils.display_img(self._color_img, self.leftImgLabel)
 
     def display_detection(self):
         """
@@ -214,39 +234,9 @@ class MainWindow(QMainWindow):
         self.display_detection()
 
         if self.facialRecogComboBox.currentIndex() == SHOW_FACIAL_RECOG:
-            self.display_img(self._detected_img, self.leftImgLabel)
+            utils.display_img(self._detected_img, self.leftImgLabel)
         else:
-            self.display_img(self._color_img, self.leftImgLabel)
+            utils.display_img(self._color_img, self.leftImgLabel)
 
         # Display the original image on the right label on import
-        self.display_img(self._color_img, self.rightImgLabel)
-
-    @staticmethod
-    def display_img(image, image_label):
-        """
-        Display an image on a given image label
-        :param image: The image to display (from openCV)
-        :param image_label: The QLabel to display the image on
-        :return:
-        """
-        # Ensure the proper image format before storing as a QImage
-        q_format = QImage.Format_Indexed8
-
-        if len(image.shape) == 3:  # rows[0], cols[1], channels[2]
-            if image.shape[2] == 4:
-                q_format = QImage.Format_RGBA8888
-            else:
-                q_format = QImage.Format_RGB888
-
-        (h, w) = image.shape[:2]
-        q_image = QImage(image, w, h, image.strides[0], q_format)
-        q_image = q_image.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
-
-        # Since openCV loads an image as BGR, we need to convert from BGR -> RBG
-        img = q_image.rgbSwapped()
-
-        # Resize the label to the scaled images width and height
-        image_label.resize(img.rect().width(), img.rect().height())
-        image_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-        # Set the image -> pixmap -> label
-        image_label.setPixmap(QPixmap.fromImage(img))
+        utils.display_img(self._color_img, self.rightImgLabel)
