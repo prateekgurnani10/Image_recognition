@@ -59,8 +59,11 @@
        </item>
        <item>
         <widget class="QLineEdit" name="m_r1c1">
+         <property name="inputMask">
+          <string/>
+         </property>
          <property name="text">
-          <string>1</string>
+          <string>0</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -294,7 +297,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="resetButton">
+        <widget class="QPushButton" name="applyButton">
          <property name="minimumSize">
           <size>
            <width>110</width>
@@ -312,7 +315,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="applyButton">
+        <widget class="QPushButton" name="resetButton">
          <property name="minimumSize">
           <size>
            <width>110</width>

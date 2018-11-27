@@ -1,8 +1,9 @@
 import cv2
 import numpy as np
-from utils import processing_utils as utils
+from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import QDialog
 from PyQt5.uic import loadUi
+from utils import processing_utils as utils
 
 IMAGE_DESCRIPT_DIALOG_UI = 'coreUI/image_description_dialog.ui'
 
@@ -13,6 +14,19 @@ class ImageDescriptionDialog(QDialog):
     def __init__(self, image):
         super(ImageDescriptionDialog, self).__init__()
         loadUi(IMAGE_DESCRIPT_DIALOG_UI, self)
+
+        self.kernel_matrix_edits = [
+            self.m_r1c1,
+            self.m_r2c1,
+            self.m_r3c1,
+            self.m_r1c2,
+            self.m_r2c2,
+            self.m_r3c2,
+            self.m_r1c3,
+            self.m_r2c3,
+            self.m_r3c3,
+        ]
+        self.set_validation()
 
         description_labels = [
             self.shapeDataLabel,
@@ -45,15 +59,20 @@ class ImageDescriptionDialog(QDialog):
         # Cache both the original and processed image
         self._processed_image = image.copy()
 
-        self.applyButton.connect(self.on_apply_clicked)
-        self.resetButton.connect(self.on_reset_clicked)
+        self.applyButton.clicked.connect(self.on_apply_clicked)
+        self.resetButton.clicked.connect(self.on_reset_clicked)
 
     def on_apply_clicked(self):
         """
         Handle when apply button is clicked
+        Only apply the matrix when it meets all validation criteria
         :return:
         """
-        pass
+        if self.verify_not_empty():
+            print("no fields missing")
+            pass
+        else:
+            print("one or more fields are missing")
 
     def on_reset_clicked(self):
         """
@@ -61,3 +80,23 @@ class ImageDescriptionDialog(QDialog):
         :return:
         """
         pass
+
+    def verify_not_empty(self):
+        """
+        Verify that all text fields are not empty
+        :return: True only if all fields are not empty
+        """
+        for text_edit in self.kernel_matrix_edits:
+            if not text_edit.hasAcceptableInput():
+                return False
+
+        return True
+
+    def set_validation(self):
+        """
+        Set validators on all matrix text edits (ensure integer input)
+        :return:
+        """
+        validator = QIntValidator(0, 9999999999)
+        for text_exit in self.kernel_matrix_edits:
+            text_exit.setValidator(validator)
