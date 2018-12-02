@@ -29,7 +29,7 @@ class WebcamDialog(QDialog):
         self._image = None
         # Detected image
         self._image_detected = None
-        # Frame timer
+        # Frame timers
         self._frame_timer = None
         # Is facial recognition active?
         self._recog_active = False
@@ -83,9 +83,11 @@ class WebcamDialog(QDialog):
         self._image_detected = self._image.copy()
 
         if self._recog_active:
-            self._image_detected = self._detector.detect(self._image, self._image)
+            grayscale_img = cv2.cvtColor(self._image, cv2.COLOR_BGR2GRAY)
+            self._image_detected = self._detector.detect(grayscale_img, self._image)
 
         utils.display_img(self._image_detected, self.webcamDisplayLabel, scale_contents=True)
+        self._image_detected = self._image.copy()
 
     def on_stop_pause_webcam_clicked(self):
         """
