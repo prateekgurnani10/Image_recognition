@@ -1,8 +1,10 @@
 import cv2
 from PyQt5.QtCore import pyqtSignal, QTimer
+from PyQt5.QtGui import QRegion
 from PyQt5.QtWidgets import QDialog
 from PyQt5.uic import loadUi
 from utils import processing_utils as utils
+from core import detector
 
 
 IMAGE_DESCRIPT_DIALOG_UI = 'coreUI/webcam_dialog.ui'
@@ -18,14 +20,21 @@ class WebcamDialog(QDialog):
         super(WebcamDialog, self).__init__()
         loadUi(IMAGE_DESCRIPT_DIALOG_UI, self)
 
+        self.webcamDisplayLabel.setMouseTracking(False)
+        self.mask_label_region()
+
         # Webcam capture
         self._capture = None
         # Image capture
         self._image = None
+        # Detected image
+        self._image_detected = None
         # Frame timer
         self._frame_timer = None
         # Is facial recognition active?
         self._recog_active = False
+        # Image recognition detector object
+        self._detector = detector.Detector()
 
         self.enableDisableRecogButton.clicked.connect(self.on_enable_disable_recog_clicked)
         self.startWebcamButton.clicked.connect(self.on_start_webcam_clicked)
@@ -37,6 +46,7 @@ class WebcamDialog(QDialog):
         :param event: Event
         :return: The new resize event
         """
+        self.mask_label_region()
         self.resized.emit()
         return super(WebcamDialog, self).resizeEvent(event)
 
@@ -66,10 +76,16 @@ class WebcamDialog(QDialog):
         Handle when the frame timer times out
         :return:
         """
-        (ret, self._image) = self._capture.read()
+        (_, self._image) = self._capture.read()
+
         # Flip the image after reading
         self._image = cv2.flip(self._image, 1)
-        utils.display_img(self._image, self.webcamDisplayLabel, scale_contents=True)
+        self._image_detected = self._image.copy()
+
+        if self._recog_active:
+            self._image_detected = self._detector.detect(self._image, self._image)
+
+        utils.display_img(self._image_detected, self.webcamDisplayLabel, scale_contents=True)
 
     def on_stop_pause_webcam_clicked(self):
         """
@@ -77,3 +93,13 @@ class WebcamDialog(QDialog):
         :return:
         """
         self._frame_timer.stop()
+
+    def mask_label_region(self):
+        """
+        Mask the webcam label region to avoid mouse events
+        :return:
+        """
+        region = QRegion(self.webcamDisplayLabel.frameGeometry())
+        region -= QRegion(self.webcamDisplayLabel.geometry())
+        region += self.webcamDisplayLabel.childrenRegion()
+        self.webcamDisplayLabel.setMask(region)
