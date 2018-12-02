@@ -59,6 +59,9 @@
        </item>
        <item>
         <widget class="QLineEdit" name="m_r1c1">
+         <property name="inputMask">
+          <string/>
+         </property>
          <property name="text">
           <string>1</string>
          </property>
@@ -98,7 +101,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>175</height>
+           <height>176</height>
           </size>
          </property>
         </spacer>
@@ -182,6 +185,18 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="normalizeButton">
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Normalize</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_6">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -192,7 +207,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>175</height>
+           <height>140</height>
           </size>
          </property>
         </spacer>
@@ -255,7 +270,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>175</height>
+           <height>176</height>
           </size>
          </property>
         </spacer>
@@ -294,7 +309,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="resetButton">
+        <widget class="QPushButton" name="applyButton">
          <property name="minimumSize">
           <size>
            <width>110</width>
@@ -312,7 +327,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="applyButton">
+        <widget class="QPushButton" name="resetButton">
          <property name="minimumSize">
           <size>
            <width>110</width>
