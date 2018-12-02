@@ -3,6 +3,7 @@ from core import detector
 from core import image_processor as processor
 from coreUI import slider_widget as slider
 from coreUI.image_description_dialog import ImageDescriptionDialog
+from coreUI.webcam_dialog import WebcamDialog
 from utils import processing_utils as utils
 from PyQt5.QtCore import pyqtSlot, QDir
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QDesktopWidget
@@ -35,11 +36,12 @@ class MainWindow(QMainWindow):
 
         # Top menu bar options
         webcam_options = self.menuBar().addMenu("&Webcam Options")
-        self.enable_webcam_action = webcam_options.addAction("&Enable")
+        self.enable_webcam_action = webcam_options.addAction("&Open Webcam")
+        # Connect the action to open the dialog window
+        self.enable_webcam_action.triggered.connect(self.open_webcam_dialog)
 
         image_options = self.menuBar().addMenu("&Image Options")
         self.image_descript_action = image_options.addAction("&Description")
-        # Connect the action to open the dialog window
         self.image_descript_action.triggered.connect(self.open_image_description_dialog)
 
         # Facial recognition: Face/eyes detector
@@ -55,7 +57,10 @@ class MainWindow(QMainWindow):
         self._rotated_img = None            # Rotated image
         self._detected_img = None           # Detected image
 
+        # Image description dialog window
         self._image_description_dialog = None
+        # Webcam dialog window
+        self._webcam_dialog = None
 
         # Initially create a filter processing behavior, passing it the list of kernel names
         fp_behavior = utils.ProcessingBehavior((
@@ -89,6 +94,14 @@ class MainWindow(QMainWindow):
         self.rotateImgSpinBox.valueChanged.connect(self.rotate_image)
         self.rotateImgDial.valueChanged.connect(self.rotateImgSpinBox.setValue)
         self.rotateImgSpinBox.valueChanged.connect(self.rotateImgDial.setValue)
+
+    def open_webcam_dialog(self):
+        """
+        Open the webcam dialog window
+        :return:
+        """
+        self._webcam_dialog = WebcamDialog()
+        self._webcam_dialog.show()
 
     def open_image_description_dialog(self):
         """
