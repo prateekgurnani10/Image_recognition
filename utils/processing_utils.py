@@ -85,11 +85,12 @@ class Kernels:
         ]
 
 
-def display_img(image, image_label):
+def display_img(image, image_label, scale_contents=False):
     """
     Display an image on a given image label
     :param image: The image to display (from openCV)
     :param image_label: The QLabel to display the image on
+    :param scale_contents: Scale the contents to the label
     :return:
     """
     # Ensure the proper image format before storing as a QImage
@@ -113,3 +114,4 @@ def display_img(image, image_label):
     image_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
     # Set the image -> pixmap -> label
     image_label.setPixmap(QPixmap.fromImage(img))
+    image_label.setScaledContents(scale_contents)
